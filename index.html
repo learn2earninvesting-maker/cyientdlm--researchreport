@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Cyient DLM — Research Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--navy:#0F1F3D;--orange:#E8701A;--green:#16A34A;--red:#DC2626;--amber:#D97706;--blue:#1D4ED8;--bg:#F8F9FC;--card:#FFFFFF;--cb:#E2E8F0;--text:#1A202C;--muted:#64748B;--sec:#374151;--nav:#0F1F3D;--thr:#F1F5F9;--alt:#F8FAFC;--hi:#FFF7ED;--dis:#FFFBEB;--sep:#E2E8F0;--sh:0 1px 3px rgba(0,0,0,.07)}
+[data-theme="dark"]{--bg:#0F172A;--card:#1E293B;--cb:#334155;--text:#F1F5F9;--muted:#94A3B8;--sec:#CBD5E1;--nav:#0D1B2A;--thr:#1E293B;--alt:#162032;--hi:#2D1F0A;--dis:#1C1400;--sep:#334155;--orange:#F09030;--sh:0 1px 3px rgba(0,0,0,.3)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.6;background:var(--bg);color:var(--text);transition:background .2s,color .2s}
+.nav{position:sticky;top:0;z-index:100;background:var(--nav);box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.nav-top{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+.nb{color:#fff;font-weight:700;font-size:14px}.nb span{color:var(--orange)}
+.dtgl{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:4px 12px;border-radius:20px;cursor:pointer;font-size:12px}
+.nav-tabs{display:flex;overflow-x:auto;scrollbar-width:none;padding:0 8px}.nav-tabs::-webkit-scrollbar{display:none}
+.tb{flex-shrink:0;background:none;border:none;color:rgba(255,255,255,.6);padding:9px 12px;cursor:pointer;font-size:11px;font-weight:600;letter-spacing:.06em;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap;text-transform:uppercase}
+.tb:hover{color:#fff}.tb.active{color:var(--orange);border-bottom-color:var(--orange)}
+.tp{display:none}.tp.active{display:block}
+.c{max-width:1280px;margin:0 auto;padding:22px 18px}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px}
+.g5{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--cb);border-radius:10px;padding:18px;box-shadow:var(--sh)}
+.kpi{background:var(--card);border:1px solid var(--cb);border-radius:10px;padding:14px 16px;text-align:center;box-shadow:var(--sh)}
+.kl{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:600}
+.kv{font-size:22px;font-weight:700;font-family:'Courier New',monospace;margin:4px 0}
+.ks{font-size:12px;color:var(--muted)}
+.sh{display:block;margin:5px auto 0}
+.sec{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--orange);font-weight:700;padding-left:10px;border-left:4px solid var(--orange);border-bottom:1px solid var(--sep);padding-bottom:7px;margin:22px 0 14px}
+.sec:first-child{margin-top:0}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.bh{background:#FEE2E2;color:#DC2626}.bm{background:#FEF3C7;color:#D97706}.bl{background:#DCFCE7;color:#16A34A}.bo{background:#DBEAFE;color:#1D4ED8}
+.bacc{background:#FFF7ED;color:#E8701A;font-size:13px;padding:5px 16px}
+[data-theme="dark"] .bh{background:#450A0A;color:#FCA5A5}[data-theme="dark"] .bm{background:#451A00;color:#FCD34D}
+[data-theme="dark"] .bl{background:#052E16;color:#86EFAC}[data-theme="dark"] .bo{background:#1E3A5F;color:#93C5FD}
+[data-theme="dark"] .bacc{background:#3D1A00;color:#FDBA74}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{background:var(--thr);color:var(--sec);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:9px 13px;text-align:left;border-bottom:2px solid var(--sep);white-space:nowrap}
+td{padding:9px 13px;border-bottom:1px solid var(--sep);color:var(--text);vertical-align:top}
+tr:nth-child(even) td{background:var(--alt)}
+.tdhi{background:var(--hi)!important;font-weight:600}
+.mono{font-family:'Courier New',monospace}
+.vb{background:linear-gradient(135deg,#0F1F3D,#1a3a6b);border-radius:12px;padding:26px;color:#fff;margin-bottom:18px}
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px;margin-top:12px}
+.sbear{background:#FEE2E2;border:1px solid #FCA5A5;border-radius:10px;padding:14px;text-align:center}
+.sbase{background:#FFF7ED;border:1px solid #FDBA74;border-radius:10px;padding:14px;text-align:center}
+.sbull{background:#DCFCE7;border:1px solid #86EFAC;border-radius:10px;padding:14px;text-align:center}
+[data-theme="dark"] .sbear{background:#450A0A;border-color:#7F1D1D}[data-theme="dark"] .sbase{background:#3D1A00;border-color:#78350F}[data-theme="dark"] .sbull{background:#052E16;border-color:#14532D}
+.tc{border-left:4px solid;border-radius:8px;padding:14px;margin-bottom:11px;background:var(--card);box-shadow:var(--sh)}
+.tc.hi{border-color:var(--red)}.tc.med{border-color:var(--amber)}.tc.opt{border-color:var(--blue)}
+.tl{position:relative;padding-left:22px}.tl::before{content:'';position:absolute;left:6px;top:0;bottom:0;width:2px;background:var(--sep)}
+.ti{position:relative;margin-bottom:18px}.td2{position:absolute;left:-18px;top:4px;width:11px;height:11px;border-radius:50%;background:var(--orange)}
+.tdate{font-size:12px;color:var(--muted);font-weight:600}.ttl{font-weight:600;font-size:14px;margin:2px 0}.tbody{font-size:13px;color:var(--sec)}
+.cw{position:relative;width:100%}
+.db{background:var(--dis);border-top:3px solid #D97706;padding:11px 18px;font-size:12px;color:var(--amber);text-align:center;margin-top:36px}
+.cc{border-radius:10px;border:1px solid var(--cb);background:var(--card);padding:18px;margin-bottom:14px}
+.ir{display:flex;gap:8px;padding:8px;border-radius:6px;margin-bottom:6px}
+@media print{.nav,.dtgl,.nav-tabs{display:none!important}body{background:white!important}.tp{display:block!important}}
+</style>
+</head>
+<body>
+<nav class="nav">
+<div class="nav-top"><div class="nb">Cyient DLM Ltd &nbsp;<span>NSE: CYIENTDLM | BSE: 543933</span></div><button class="dtgl" onclick="toggleTheme()">&#9728;/&#9790;</button></div>
+<div class="nav-tabs">
+<button class="tb active" onclick="showTab(0)">Exec Summary</button>
+<button class="tb" onclick="showTab(1)">Overview</button>
+<button class="tb" onclick="showTab(2)">Business</button>
+<button class="tb" onclick="showTab(3)">Industry</button>
+<button class="tb" onclick="showTab(4)">Financials</button>
+<button class="tb" onclick="showTab(5)">Growth</button>
+<button class="tb" onclick="showTab(6)">Forensics</button>
+<button class="tb" onclick="showTab(7)">Valuation</button>
+<button class="tb" onclick="showTab(8)">Thesis</button>
+<button class="tb" onclick="showTab(9)">Risks</button>
+<button class="tb" onclick="showTab(10)">Concall</button>
+<button class="tb" onclick="showTab(11)">Cap. Alloc.</button>
+<button class="tb" onclick="showTab(12)">Ownership</button>
+<button class="tb" onclick="showTab(13)">Events</button>
+</div></nav>
+
+<!-- TAB 0: EXEC SUMMARY -->
+<div id="tab-0" class="tp active"><div class="c">
+<div class="vb">
+<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:12px;">
+<span class="bacc" style="font-size:15px;padding:8px 22px;border-radius:30px;">ACCUMULATE</span>
+<div><div style="font-size:12px;opacity:.7;text-transform:uppercase;">Conviction</div><div style="font-size:30px;font-weight:800;font-family:'Courier New',monospace;color:#F09030;">6 / 10</div></div>
+<div style="margin-left:auto;text-align:right;"><div style="font-size:11px;opacity:.7;">CMP (Apr 27, 2026)</div><div style="font-size:28px;font-weight:800;font-family:'Courier New',monospace;">&#8377;330</div><div style="font-size:11px;opacity:.7;">Mkt Cap ~&#8377;2,400 Cr | 52W: &#8377;265&#8211;&#8377;540</div></div>
+</div>
+<p style="font-size:14px;line-height:1.75;opacity:.9;">Cyient DLM is India's premier Electronics Manufacturing Services (EMS) company for high-reliability sectors &mdash; Aerospace (39%), Industrial (28%), MedTech (21%), and Defence (10%). FY26 was a painful year: revenue fell 17% YoY to &#8377;1,262 Cr as the completion of a large BEL (Bharat Electronics) order created a high base effect and West Asia supply chain disruptions delayed execution. But the investment thesis is forward-looking: the order book hit &#8377;2,416 Cr (10-quarter high, +27% YoY), book-to-bill stayed above 1x every quarter, Q4 FY26 showed a strong sequential recovery (+22% QoQ revenue, PAT doubled QoQ), and management guides YoY growth in all four quarters of FY27. Accumulate at &#8377;280-350 for a base target of &#8377;400-430 as FY27 revenues convert the record backlog.</p>
+</div>
+<div class="g5" style="margin-bottom:18px;">
+<div class="kpi"><div class="kl">CMP</div><div class="kv">&#8377;330</div><div class="ks">52W: &#8377;265&#8211;&#8377;540</div><svg class="sh" width="80" height="26"><polyline points="0,8 13,12 26,8 39,14 52,18 65,22 80,20" fill="none" stroke="#E8701A" stroke-width="2"/></svg></div>
+<div class="kpi"><div class="kl">Mkt Cap</div><div class="kv" style="font-size:18px;">&#8377;2,400 Cr</div><div class="ks">Small Cap | EMS</div><svg class="sh" width="80" height="26"><polyline points="0,8 13,12 26,10 39,14 52,16 65,20 80,18" fill="none" stroke="#E8701A" stroke-width="2"/></svg></div>
+<div class="kpi"><div class="kl">PE (FY26)</div><div class="kv">32x</div><div class="ks">EPS FY26 &#8377;10.1</div><svg class="sh" width="80" height="26"><polyline points="0,10 13,14 26,10 39,16 52,20 65,22 80,18" fill="none" stroke="#E8701A" stroke-width="2"/></svg></div>
+<div class="kpi"><div class="kl">ROE (3Y avg)</div><div class="kv">8.2%</div><div class="ks">Improving trajectory</div><svg class="sh" width="80" height="26"><polyline points="0,22 13,20 26,18 39,16 52,14 65,12 80,10" fill="none" stroke="#16A34A" stroke-width="2"/></svg></div>
+<div class="kpi"><div class="kl">Order Book</div><div class="kv" style="font-size:16px;">&#8377;2,416 Cr</div><div class="ks">10-qtr high, +27% YoY</div><svg class="sh" width="80" height="26"><polyline points="0,22 13,18 26,16 39,12 52,10 65,8 80,5" fill="none" stroke="#16A34A" stroke-width="2"/></svg></div>
+</div>
+<div class="sec">Bear / Base / Bull Scenarios</div>
+<div class="sg">
+<div class="sbear"><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#DC2626;margin-bottom:5px;">Bear</div><div style="font-size:26px;font-weight:800;font-family:'Courier New',monospace;color:#DC2626;">&#8377;220</div><div style="font-size:12px;font-weight:700;color:#DC2626;">-33% downside</div><div style="font-size:12px;margin-top:5px;color:#64748B;">FY27 recovery delayed. Revenue flat at &#8377;1,250 Cr. Margins stay thin. PAT &#8377;50 Cr. PE 22x.</div></div>
+<div class="sbase"><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#D97706;margin-bottom:5px;">Base</div><div style="font-size:26px;font-weight:800;font-family:'Courier New',monospace;color:#D97706;">&#8377;400</div><div style="font-size:12px;font-weight:700;color:#D97706;">+21% upside</div><div style="font-size:12px;margin-top:5px;color:#64748B;">FY27 revenue &#8377;1,520 Cr (+20%). PAT &#8377;100 Cr. EBITDA 10%+. PE 24x.</div></div>
+<div class="sbull"><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#16A34A;margin-bottom:5px;">Bull</div><div style="font-size:26px;font-weight:800;font-family:'Courier New',monospace;color:#16A34A;">&#8377;520</div><div style="font-size:12px;font-weight:700;color:#16A34A;">+58% upside</div><div style="font-size:12px;margin-top:5px;color:#64748B;">FY27 revenue &#8377;1,700 Cr, double-digit EBITDA, defence ramp-up. PAT &#8377;140 Cr. PE 30x.</div></div>
+</div>
+<div class="g2" style="margin-top:16px;">
+<div class="card"><div class="sec">Top Catalysts</div>
+<div class="ir" style="background:#F0FDF4;"><span style="color:#16A34A;font-size:16px;flex-shrink:0;">&#9650;</span><div><div style="font-weight:700;font-size:13px;">Record Order Book &#8377;2,416 Cr — 10-Quarter High</div><div style="font-size:12px;color:#64748B;">Book-to-bill above 1 in all 4 quarters of FY26. &#8377;2,416 Cr backlog is the largest in company history. Revenue conversion in FY27 is the primary value driver.</div></div></div>
+<div class="ir" style="background:#F0FDF4;"><span style="color:#16A34A;font-size:16px;flex-shrink:0;">&#9650;</span><div><div style="font-weight:700;font-size:13px;">Q4 FY26 Recovery Signal (+22% QoQ, PAT Doubled)</div><div style="font-size:12px;color:#64748B;">Q4 revenue &#8377;369 Cr (+22% QoQ from &#8377;303 Cr Q3). PAT &#8377;22 Cr vs &#8377;11 Cr in Q3. EBITDA margin 11.7% — highest of FY26. Sequential recovery confirms underlying demand is intact.</div></div></div>
+<div class="ir" style="background:#F0FDF4;"><span style="color:#16A34A;font-size:16px;flex-shrink:0;">&#9650;</span><div><div style="font-weight:700;font-size:13px;">India Defence EMS Structural Story</div><div style="font-size:12px;color:#64748B;">India defence capex rising 15%+ annually. DRDO and OFB indigenisation mandates create long-tail demand for EMS providers with aerospace/defence certifications. Cyient DLM has AS9100, ITAR — few Indian EMS players can match this.</div></div></div>
+</div>
+<div class="card"><div class="sec">Top Risks</div>
+<div class="ir" style="background:#FEF2F2;"><span style="color:#DC2626;font-size:16px;flex-shrink:0;">&#9660;</span><div><div style="font-weight:700;font-size:13px;">Revenue Declined 17% in FY26 — Execution Risk Visible</div><div style="font-size:12px;color:#64748B;">FY26 is a concrete data point of what can go wrong. BEL base effect + West Asia supply chain = &#8377;258 Cr revenue miss vs FY25. FY27 recovery is management's promise, not yet demonstrated.</div></div></div>
+<div class="ir" style="background:#FEF2F2;"><span style="color:#DC2626;font-size:16px;flex-shrink:0;">&#9660;</span><div><div style="font-weight:700;font-size:13px;">Thin Margins (8-10% EBITDA) Leave No Room for Error</div><div style="font-size:12px;color:#64748B;">At 8-10% EBITDA margins, any revenue shortfall or cost surprise creates PAT volatility. Low-margin EMS business requires scale; Cyient DLM is still below the scale needed for structural margin expansion.</div></div></div>
+<div class="ir" style="background:#FEF2F2;"><span style="color:#DC2626;font-size:16px;flex-shrink:0;">&#9660;</span><div><div style="font-weight:700;font-size:13px;">West Asia / Geopolitical Supply Chain Vulnerability</div><div style="font-size:12px;color:#64748B;">Critical components routed via Middle East supply chains. Any re-escalation delays material receipts and pushes revenue recognition out by quarters.</div></div></div>
+</div></div>
+</div><div class="db">&#9888; Data sourced from public sources. Not SEBI-registered investment advice.</div></div>
+
+<!-- TAB 1: OVERVIEW -->
+<div id="tab-1" class="tp"><div class="c">
+<div class="sec">Company at a Glance</div>
+<div class="g2">
+<div class="card">
+<p style="font-size:14px;margin-bottom:10px;">Cyient DLM Ltd is a leading Electronics Manufacturing Services (EMS) company specialising in design-led manufacturing for high-reliability sectors. It is a subsidiary of Cyient Ltd (74.7% promoter stake), a Hyderabad-based global technology company. Cyient DLM provides system design, integration, testing, and manufacturing of electronic components and subsystems for OEMs in aerospace, defence, industrial, and medical segments.</p>
+<p style="font-size:14px;margin-bottom:10px;">The company's business model is Low Volume, High Mix (LVHM) — a specialised contract manufacturing setup emphasising quality and customisation over commodity scale. It enters into 3-5 year Master Service Agreements (MSAs) with customers, providing earnings visibility but also creating lumpy revenue profiles when large orders complete.</p>
+<p style="font-size:14px;">Listed in 2023 via IPO, Cyient DLM is strategically positioned to benefit from India's Defence indigenisation push (Atmanirbhar Bharat) and global aerospace supply chain diversification away from China. Its international customer base spans India, Europe, North America, China, and Japan — making it a genuinely global EMS player, unusual for an Indian small-cap.</p>
+</div>
+<div class="card">
+<div style="font-size:11px;color:var(--muted);margin-bottom:10px;text-transform:uppercase;font-weight:600;">Key Facts</div>
+<table>
+<tr><td style="color:var(--muted);font-size:12px;">NSE / BSE</td><td class="mono">CYIENTDLM / 543933</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">Parent</td><td>Cyient Ltd (~74.7% stake)</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">HQ</td><td>Bengaluru, Karnataka</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">Incorporated</td><td>Pre-IPO; listed 2023</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">Segments</td><td>Aerospace, Industrial, MedTech, Defence</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">Business Model</td><td>Low Volume, High Mix (LVHM) EMS</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">Customers</td><td>India, Europe, North America, China, Japan</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">Contract Type</td><td>3-5 year Master Service Agreements</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">FY26 Revenue</td><td class="mono">&#8377;1,262 Cr (-17% YoY)</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">Order Book (Mar 26)</td><td class="mono" style="color:var(--green);">&#8377;2,416 Cr (10-qtr high)</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">Book-to-Bill FY26</td><td class="mono" style="color:var(--green);">&gt;1x in all 4 quarters</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">CRISIL Rating</td><td>A+/Positive (Oct 2025)</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">Certifications</td><td>AS9100D (Aerospace), ITAR, ISO 13485 (MedTech)</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">Total Assets (Mar 25)</td><td class="mono">&#8377;1,681 Cr</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">Net Worth (Mar 25)</td><td class="mono">&#8377;949 Cr</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">D/E Ratio</td><td class="mono" style="color:var(--green);">~0.01x (near debt-free post IPO)</td></tr>
+</table>
+</div></div>
+<div class="sec">Recent Milestones (12 Months)</div>
+<div class="tl">
+<div class="ti"><div class="td2"></div><div class="tdate">Apr 2026</div><div class="ttl">Q4 FY26: Revenue &#8377;369 Cr (+22% QoQ, -14% YoY), PAT &#8377;22 Cr, EBITDA 11.7%</div><div class="tbody">Best quarter of FY26. Sequential recovery validates demand is intact. Order book &#8377;2,416 Cr — 10-quarter high.</div></div>
+<div class="ti"><div class="td2"></div><div class="tdate">Apr 2026</div><div class="ttl">FY26 full year: Revenue &#8377;1,262 Cr (-17%), PAT &#8377;73 Cr. CRISIL A+/Positive maintained.</div><div class="tbody">Revenue declined due to BEL base effect and West Asia disruptions. Management expects recovery in all 4 quarters of FY27.</div></div>
+<div class="ti"><div class="td2"></div><div class="tdate">Oct 2025</div><div class="ttl">CRISIL rating migrated to A+/Positive from AA(CE)/Stable</div><div class="tbody">Standalone rating confirms operational strength. Migration from credit-enhanced rating (parent-backed) to standalone is positive long-term signal.</div></div>
+<div class="ti"><div class="td2"></div><div class="tdate">Oct 2025</div><div class="ttl">CFO appointment: R.M. Subramanian joins as CFO (Oct 24, 2025)</div><div class="tbody">Leadership strengthening post-IPO. Previous CFO transitioned to strategic role within Cyient Group.</div></div>
+<div class="ti"><div class="td2"></div><div class="tdate">Sep 2025</div><div class="ttl">Q2 FY26: H1 order intake crosses &#8377;1,000 Cr (+130% YoY)</div><div class="tbody">Landmark order intake metric. 4 consecutive quarters of positive free cash flow. EBITDA margin improved to 10%.</div></div>
+<div class="ti"><div class="td2"></div><div class="tdate">Aug 2025</div><div class="ttl">Independent Director Madan Pillutla resigned (Aug 18, 2025)</div><div class="tbody">Board composition change. Governance watch item — monitor replacement appointment.</div></div>
+</div>
+</div><div class="db">&#9888; Data sourced from public sources. Not SEBI-registered investment advice.</div></div>
+
+<!-- TAB 2: BUSINESS -->
+<div id="tab-2" class="tp"><div class="c">
+<div class="g2">
+<div class="card"><div class="sec">Revenue Mix by Segment (Q4 FY26)</div><div class="cw" style="height:240px;"><canvas id="dlPieChart"></canvas></div></div>
+<div class="card"><div class="sec">Key Certifications &amp; Differentiators</div>
+<div style="display:flex;flex-direction:column;gap:11px;">
+<div style="border-left:3px solid var(--green);padding-left:10px;"><div style="font-weight:700;font-size:13px;">AS9100D (Aerospace Quality System)</div><div style="font-size:12px;color:var(--sec);">Gold standard for aerospace manufacturing. Fewer than 30 Indian EMS companies hold this certification. Qualifies CDLM for global aerospace OEM supplier lists.</div></div>
+<div style="border-left:3px solid var(--green);padding-left:10px;"><div style="font-weight:700;font-size:13px;">ITAR (International Traffic in Arms Regulations)</div><div style="font-size:12px;color:var(--sec);">US defence export compliance. Essential for defence electronics work with US OEMs and NATO-aligned companies. Very few Indian EMS players are ITAR-compliant.</div></div>
+<div style="border-left:3px solid var(--green);padding-left:10px;"><div style="font-weight:700;font-size:13px;">ISO 13485 (Medical Device Manufacturing)</div><div style="font-size:12px;color:var(--sec);">Enables MedTech OEM supply. MedTech is the highest-margin segment — growing share of revenue mix is margin-accretive.</div></div>
+<div style="border-left:3px solid var(--blue);padding-left:10px;"><div style="font-weight:700;font-size:13px;">Low Volume, High Mix (LVHM) Specialisation</div><div style="font-size:12px;color:var(--sec);">LVHM contrasts with commodity EMS (high-volume, low-margin). LVHM demands technical competence and quality — creates stickier customer relationships and higher margins than commodity players.</div></div>
+<div style="border-left:3px solid var(--blue);padding-left:10px;"><div style="font-weight:700;font-size:13px;">Vertical Integration — Cables, Sheet Metal, Machining</div><div style="font-size:12px;color:var(--sec);">FY27 strategy focuses on vertical integration across cables, sheet metal, and machining. Reduces sub-vendor dependency, improves margin, and strengthens supply chain control.</div></div>
+</div>
+</div></div>
+<div class="sec">Segment Performance FY26</div>
+<div class="tw card"><table>
+<thead><tr><th>Segment</th><th>Q4 FY26 Mix</th><th>YoY Trend</th><th>Key Drivers</th><th>Outlook</th></tr></thead>
+<tbody>
+<tr><td><strong>Aerospace</strong></td><td class="mono">39%</td><td style="color:var(--green);">Growing</td><td>Global aerospace recovery, supply chain diversification from China</td><td style="color:var(--green);">Positive — dominant segment</td></tr>
+<tr><td><strong>Industrial</strong></td><td class="mono">28%</td><td style="color:var(--amber);">Stable</td><td>Factory automation, industrial electronics OEM supply</td><td style="color:var(--amber);">Stable — steady but low growth</td></tr>
+<tr><td><strong>MedTech</strong></td><td class="mono">21%</td><td style="color:var(--green);">Growing</td><td>Medical device manufacturing for Europe/US OEMs; highest margins</td><td style="color:var(--green);">High-priority expansion segment</td></tr>
+<tr><td><strong>Defence</strong></td><td class="mono">10%</td><td style="color:var(--red);">-68% YoY Q4</td><td>BEL large order completed in FY25; now normalising base</td><td style="color:var(--green);">Recovery expected FY27 (Atmanirbhar)</td></tr>
+<tr><td><strong>Other</strong></td><td class="mono">2%</td><td class="mono">---</td><td>Miscellaneous</td><td class="mono">---</td></tr>
+</tbody></table></div>
+<div class="sec">Geographic Presence</div>
+<div class="g4">
+<div class="card" style="padding:12px;"><div style="font-weight:700;font-size:13px;margin-bottom:4px;">India</div><div style="font-size:12px;color:var(--sec);">Defence, aerospace (BEL, DRDO, HAL supply chain)</div></div>
+<div class="card" style="padding:12px;"><div style="font-weight:700;font-size:13px;margin-bottom:4px;">Europe</div><div style="font-size:12px;color:var(--sec);">Aerospace OEM supply; M&amp;A target region per management</div></div>
+<div class="card" style="padding:12px;"><div style="font-weight:700;font-size:13px;margin-bottom:4px;">North America</div><div style="font-size:12px;color:var(--sec);">ITAR-compliant defence/aerospace supply</div></div>
+<div class="card" style="padding:12px;"><div style="font-weight:700;font-size:13px;margin-bottom:4px;">Japan / China</div><div style="font-size:12px;color:var(--sec);">Industrial and consumer electronics segment supply</div></div>
+</div>
+</div><div class="db">&#9888; Data sourced from public sources. Not SEBI-registered investment advice.</div></div>
+
+<!-- TAB 3: INDUSTRY -->
+<div id="tab-3" class="tp"><div class="c">
+<div class="g3">
+<div class="kpi"><div class="kl">India EMS Market</div><div class="kv" style="font-size:16px;">&#8377;3.7L Cr</div><div class="ks">FY27E; 32% CAGR to &#8377;6L Cr by FY28</div></div>
+<div class="kpi"><div class="kl">India Defence Budget</div><div class="kv" style="font-size:16px;">&#8377;6.2L Cr</div><div class="ks">FY26; growing 8-10% annually</div></div>
+<div class="kpi"><div class="kl">Global Aerospace EMS</div><div class="kv" style="font-size:16px;">$150B+</div><div class="ks">Growing as OEMs outsource manufacturing</div></div>
+</div>
+<div class="sec">Peer Comparison (Indian EMS)</div>
+<div class="tw card"><table>
+<thead><tr><th>Company</th><th>Focus</th><th>Revenue (Cr)</th><th>EBITDA%</th><th>PE</th><th>Growth</th></tr></thead>
+<tbody>
+<tr><td><strong>Kaynes Technology</strong></td><td>Diversified EMS</td><td class="mono">&#8377;2,100+</td><td class="mono">14%</td><td class="mono">105x</td><td class="mono">High</td></tr>
+<tr><td><strong>Avalon Technologies</strong></td><td>Diversified EMS</td><td class="mono">&#8377;800+</td><td class="mono">12%</td><td class="mono">55x</td><td class="mono">High</td></tr>
+<tr><td><strong>Syrma SGS</strong></td><td>Diversified EMS</td><td class="mono">&#8377;3,000+</td><td class="mono">8%</td><td class="mono">40x</td><td class="mono">Moderate</td></tr>
+<tr class="tdhi"><td><strong>Cyient DLM</strong></td><td>Aero / Defence EMS</td><td class="mono">&#8377;1,262</td><td class="mono">8-10%</td><td class="mono">32x</td><td class="mono">Recovery play</td></tr>
+<tr><td><strong>Centum Electronics</strong></td><td>Defence / Space EMS</td><td class="mono">&#8377;600+</td><td class="mono">12%</td><td class="mono">35x</td><td class="mono">Moderate-High</td></tr>
+</tbody></table>
+<div style="padding:8px;font-size:12px;color:var(--muted);">At 32x PE, Cyient DLM is among the cheapest in the Indian EMS space. Kaynes at 105x shows the sector premium when growth is visible — the valuation gap to CDLM reflects FY26's revenue decline. FY27 recovery could close this gap significantly.</div>
+</div>
+<div class="g2">
+<div class="card"><div class="sec">Industry Tailwinds</div>
+<div style="display:flex;flex-direction:column;gap:9px;">
+<div style="padding:9px;border-radius:6px;border-left:3px solid var(--green);background:var(--alt);"><div style="font-weight:700;font-size:13px;">Atmanirbhar Bharat — Defence Indigenisation</div><div style="font-size:12px;color:var(--sec);">India's policy mandating indigenous defence procurement creates structural demand for domestic EMS with defence certifications. CDLM's AS9100D + ITAR qualifications are among the few that meet these standards.</div></div>
+<div style="padding:9px;border-radius:6px;border-left:3px solid var(--green);background:var(--alt);"><div style="font-weight:700;font-size:13px;">China+1 Supply Chain Diversification</div><div style="font-size:12px;color:var(--sec);">Global OEMs actively diversifying supply chains away from China. India EMS (especially certified aerospace/defence players) is the primary beneficiary. Cyient DLM has existing customer relationships in Europe and North America to capitalise.</div></div>
+<div style="padding:9px;border-radius:6px;border-left:3px solid var(--green);background:var(--alt);"><div style="font-weight:700;font-size:13px;">Global Aerospace Recovery</div><div style="font-size:12px;color:var(--sec);">Post-COVID aerospace production recovering — Boeing, Airbus, and tier-1 suppliers ramping output. EMS providers with aerospace certification benefit from this production ramp.</div></div>
+<div style="padding:9px;border-radius:6px;border-left:3px solid var(--green);background:var(--alt);"><div style="font-weight:700;font-size:13px;">MedTech Manufacturing in India</div><div style="font-size:12px;color:var(--sec);">India's Production Linked Incentive (PLI) scheme for medical devices attracting global MedTech OEMs to India. CDLM's ISO 13485 certification positions it as a preferred Indian manufacturing partner.</div></div>
+</div></div>
+<div class="card"><div class="sec">Industry Headwinds</div>
+<div style="display:flex;flex-direction:column;gap:9px;">
+<div style="padding:9px;border-radius:6px;border-left:3px solid var(--red);background:var(--alt);"><div style="font-weight:700;font-size:13px;">EMS Margin Pressure</div><div style="font-size:12px;color:var(--sec);">EMS is inherently a low-margin business. Global EMS majors (Foxconn, Flex, Celestica) operate at 4-8% EBITDA. CDLM's 8-10% is above average for EMS, but room for further improvement requires significant scale.</div></div>
+<div style="padding:9px;border-radius:6px;border-left:3px solid var(--red);background:var(--alt);"><div style="font-weight:700;font-size:13px;">Component Availability (Semiconductor Supply)</div><div style="font-size:12px;color:var(--sec);">Aerospace/defence electronics require long lead-time specialised components. Semiconductor shortages or export restrictions can delay manufacturing milestones and push revenue recognition into future quarters.</div></div>
+<div style="padding:9px;border-radius:6px;border-left:3px solid var(--amber);background:var(--alt);"><div style="font-weight:700;font-size:13px;">Customer Concentration (BEL dependency)</div><div style="font-size:12px;color:var(--sec);">BEL (Bharat Electronics) was a large anchor customer. Completion of the large BEL order in FY25 directly caused FY26's revenue decline. Single-customer dependency creates lumpy revenue profile.</div></div>
+</div></div></div>
+</div><div class="db">&#9888; Data sourced from public sources. Not SEBI-registered investment advice.</div></div>
+
+<!-- TAB 4: FINANCIALS -->
+<div id="tab-4" class="tp"><div class="c">
+<div class="sec">P&amp;L — Annual (&#8377; Crores)</div>
+<div class="tw card"><table>
+<thead><tr><th>Metric</th><th>FY22</th><th>FY23</th><th>FY24</th><th>FY25</th><th class="tdhi">FY26</th><th>FY27E (Base)</th></tr></thead>
+<tbody>
+<tr><td><strong>Revenue</strong></td><td class="mono">620</td><td class="mono">832</td><td class="mono">1,193</td><td class="mono">1,520</td><td class="mono tdhi" style="color:var(--red);">1,262</td><td class="mono" style="color:var(--green);">1,520</td></tr>
+<tr><td><strong>EBITDA</strong></td><td class="mono">31</td><td class="mono">50</td><td class="mono">95</td><td class="mono">122</td><td class="mono tdhi">113</td><td class="mono" style="color:var(--green);">152+</td></tr>
+<tr><td><strong>EBITDA%</strong></td><td class="mono">5%</td><td class="mono">6%</td><td class="mono">8%</td><td class="mono">8%</td><td class="mono tdhi">9%</td><td class="mono" style="color:var(--green);">10%+</td></tr>
+<tr><td><strong>PAT</strong></td><td class="mono">12</td><td class="mono">32</td><td class="mono">46</td><td class="mono">68</td><td class="mono tdhi" style="color:var(--amber);">73</td><td class="mono" style="color:var(--green);">95-110</td></tr>
+<tr><td><strong>EPS (&#8377;)</strong></td><td class="mono">---</td><td class="mono">6.0</td><td class="mono">---</td><td class="mono">8.6</td><td class="mono tdhi">10.1</td><td class="mono" style="color:var(--green);">13.1-15.2</td></tr>
+<tr><td><strong>Revenue CAGR</strong></td><td colspan="4" style="color:var(--muted);font-size:12px;">FY22-25: +35% CAGR</td><td colspan="2" style="color:var(--red);font-size:12px;">FY25-26: -17% (base effect)</td></tr>
+</tbody></table></div>
+<div class="g2" style="margin-top:14px;">
+<div class="card"><div class="sec">Revenue Trend (&#8377; Cr)</div><div class="cw" style="height:240px;"><canvas id="dlRevChart"></canvas></div></div>
+<div class="card"><div class="sec">EBITDA Margin &amp; PAT Trend</div><div class="cw" style="height:240px;"><canvas id="dlMarginChart"></canvas></div></div>
+</div>
+<div class="sec">Quarterly Performance (&#8377; Crores)</div>
+<div class="tw card"><table>
+<thead><tr><th>Quarter</th><th>Revenue</th><th>OPM%</th><th>PAT</th><th>YoY Rev%</th><th>QoQ Rev%</th></tr></thead>
+<tbody>
+<tr><td>Q1 FY26</td><td class="mono">279</td><td class="mono">7%</td><td class="mono">8</td><td class="mono" style="color:var(--red);">-27%</td><td class="mono">-35%</td></tr>
+<tr><td>Q2 FY26</td><td class="mono">311</td><td class="mono">10%</td><td class="mono">32</td><td class="mono" style="color:var(--red);">-20%</td><td class="mono" style="color:var(--green);">+11%</td></tr>
+<tr><td>Q3 FY26</td><td class="mono">303</td><td class="mono">9%</td><td class="mono">11</td><td class="mono" style="color:var(--red);">-32%</td><td class="mono">-2%</td></tr>
+<tr class="tdhi"><td>Q4 FY26</td><td class="mono tdhi" style="color:var(--green);">369</td><td class="mono tdhi" style="color:var(--green);">11.7%</td><td class="mono tdhi" style="color:var(--green);">22</td><td class="mono tdhi" style="color:var(--red);">-14%</td><td class="mono tdhi" style="color:var(--green);">+22%</td></tr>
+</tbody></table></div>
+<div class="sec">Balance Sheet &amp; Cash Flow Highlights</div>
+<div class="g2">
+<div class="tw card"><table>
+<thead><tr><th>BS Metric</th><th>FY24</th><th class="tdhi">FY25</th></tr></thead>
+<tbody>
+<tr><td>Total Assets</td><td class="mono">&#8377;1,603 Cr</td><td class="mono tdhi">&#8377;1,681 Cr</td></tr>
+<tr><td>Net Worth / Equity</td><td class="mono">&#8377;909 Cr</td><td class="mono tdhi">&#8377;949 Cr</td></tr>
+<tr><td>Total Debt</td><td class="mono">&#8377;~15 Cr</td><td class="mono tdhi">&#8377;~10 Cr</td></tr>
+<tr><td>D/E Ratio</td><td class="mono" style="color:var(--green);">~0.02x</td><td class="mono tdhi" style="color:var(--green);">~0.01x</td></tr>
+</tbody></table></div>
+<div class="tw card"><table>
+<thead><tr><th>CF Metric</th><th>FY25</th><th class="tdhi">H1 FY26</th></tr></thead>
+<tbody>
+<tr><td>FCF</td><td class="mono" style="color:var(--amber);">Negative</td><td class="mono tdhi" style="color:var(--green);">Positive (4 consecutive qtrs)</td></tr>
+<tr><td>CFO from Ops</td><td class="mono" style="color:var(--red);">-&#8377;62 Cr</td><td class="mono tdhi" style="color:var(--green);">Improving</td></tr>
+<tr><td>FCF Q2 FY26</td><td class="mono">---</td><td class="mono tdhi" style="color:var(--green);">&#8377;27 Cr (positive)</td></tr>
+<tr><td>H1 Order Intake</td><td class="mono">---</td><td class="mono tdhi" style="color:var(--green);">&#8377;1,000+ Cr (+130% YoY)</td></tr>
+</tbody></table></div>
+</div>
+</div><div class="db">&#9888; Data sourced from public sources. Not SEBI-registered investment advice.</div></div>
+
+<!-- TAB 5: GROWTH -->
+<div id="tab-5" class="tp"><div class="c">
+<div class="sec">CAGR Summary</div>
+<div class="tw card"><table>
+<thead><tr><th>Metric</th><th>FY22-25 CAGR</th><th>FY26 (actual)</th><th>FY27E (JPMorgan/Motilal)</th></tr></thead>
+<tbody>
+<tr><td>Revenue</td><td class="mono" style="color:var(--green);">+35%</td><td class="mono" style="color:var(--red);">-17% (BEL base)</td><td class="mono" style="color:var(--green);">+20% (JPM est.)</td></tr>
+<tr><td>EBITDA</td><td class="mono" style="color:var(--green);">+58%</td><td class="mono" style="color:var(--red);">-7%</td><td class="mono" style="color:var(--green);">+35%+ (double digit %)</td></tr>
+<tr><td>PAT</td><td class="mono" style="color:var(--green);">+79%</td><td class="mono" style="color:var(--amber);">+7% (margins improving)</td><td class="mono" style="color:var(--green);">+30-50%</td></tr>
+<tr><td>Order Book</td><td class="mono">---</td><td class="mono" style="color:var(--green);">+27% YoY</td><td class="mono">Strong — 10-qtr high</td></tr>
+</tbody></table></div>
+<div class="sec">Growth Triggers</div>
+<div class="tc hi"><div style="font-weight:700;font-size:14px;margin-bottom:5px;display:flex;align-items:center;gap:8px;"><span class="badge bh">HIGH</span>FY27 Revenue Recovery — Base Effect Normalisation</div>
+<div style="font-size:13px;color:var(--sec);margin-bottom:6px;">FY26 revenue decline of 17% was entirely attributable to: (a) BEL's large order completing in FY25 (creating a high base), and (b) West Asia supply chain disruptions delaying material receipts. Management explicitly stated both issues are being resolved for FY27 — ordering long-lead components in advance, Altek acquisition partially offsetting BEL, and new customer additions. JPMorgan projects ~20% FY27 revenue growth back to &#8377;1,520 Cr FY25 levels.</div>
+<div style="font-size:12px;color:var(--green);font-weight:600;">&#9650; &#8377;2,416 Cr order book means FY27 revenue is essentially backlog conversion — not dependent on new wins. High visibility.</div>
+<div style="font-size:12px;color:var(--red);margin-top:4px;">&#9660; FY26 recovery was also "guided" and didn't materialise — management credibility gap must be watched closely.</div>
+</div>
+<div class="tc hi"><div style="font-weight:700;font-size:14px;margin-bottom:5px;display:flex;align-items:center;gap:8px;"><span class="badge bh">HIGH</span>Margin Expansion — Towards Double-Digit EBITDA</div>
+<div style="font-size:13px;color:var(--sec);margin-bottom:6px;">Q4 FY26 EBITDA margin hit 11.7% — the highest in the company's recent history. Management guides sustained double-digit EBITDA for FY27 "with potential for improvement as volumes grow and operating leverage kicks in." From 5% in FY22 to 11.7% in Q4 FY26 shows a clear structural improvement trajectory. At &#8377;1,500 Cr+ revenue, operating leverage kicks in and margins could stabilise at 10-12%.</div>
+<div style="font-size:12px;color:var(--green);font-weight:600;">&#9650; Q4 FY26 PAT margin was highest quarterly margin ever (6%). At scale, EMS companies can achieve 12-15% EBITDA with vertical integration.</div>
+<div style="font-size:12px;color:var(--red);margin-top:4px;">&#9660; EMS structurally thin-margin — any revenue miss causes significant PAT leverage in reverse.</div>
+</div>
+<div class="tc med"><div style="font-weight:700;font-size:14px;margin-bottom:5px;display:flex;align-items:center;gap:8px;"><span class="badge bm">MEDIUM</span>Defence Revival — Atmanirbhar FY27 Orders</div>
+<div style="font-size:13px;color:var(--sec);margin-bottom:6px;">Defence segment collapsed to 10% of Q4 FY26 mix due to BEL order completion. FY27 guidance includes Automotive and India Defence expansion. DPP (Defence Procurement Policy) mandates increasing indigenous content. DRDO, HAL, and new private defence players (Adani Defence, Bharat Forge) are potential new customers. Each new defence MSA could add &#8377;100-200 Cr to annual revenue.</div>
+<div style="font-size:12px;color:var(--green);font-weight:600;">&#9650; India defence electronics budget growing 15%+ annually — TAM expanding rapidly.</div>
+<div style="font-size:12px;color:var(--red);margin-top:4px;">&#9660; Defence approval timelines in India are notoriously slow. Clearances can delay by years, not quarters.</div>
+</div>
+<div class="tc med"><div style="font-weight:700;font-size:14px;margin-bottom:5px;display:flex;align-items:center;gap:8px;"><span class="badge bm">MEDIUM</span>Europe M&amp;A Expansion</div>
+<div style="font-size:13px;color:var(--sec);margin-bottom:6px;">Management has explicitly stated an M&amp;A strategy targeting Europe for product gaps and geographic expansion. Altek acquisition (already done) demonstrates this capability. A European EMS acquisition would add aerospace/MedTech revenue at higher margins than India, access to EU defence programmes, and customer diversification.</div>
+<div style="font-size:12px;color:var(--green);font-weight:600;">&#9650; Successful Europe acquisition could add &#8377;200-400 Cr revenue and re-rate the stock significantly.</div>
+<div style="font-size:12px;color:var(--red);margin-top:4px;">&#9660; Cross-border M&amp;A integration is complex; IPO proceeds largely deployed — future acquisitions need new funding.</div>
+</div>
+<div class="tc opt"><div style="font-weight:700;font-size:14px;margin-bottom:5px;display:flex;align-items:center;gap:8px;"><span class="badge bo">OPTIONALITY</span>Vertical Integration — Cables, Sheet Metal, Machining</div>
+<div style="font-size:13px;color:var(--sec);margin-bottom:6px;">FY27 strategy focuses on vertical integration: building in-house capabilities for cables, sheet metal, and machining that are currently sub-contracted. Each step of vertical integration adds margin and reduces supply chain risk. At scale, could move EBITDA from 10% towards 13-15%.</div>
+<div style="font-size:12px;color:var(--green);font-weight:600;">&#9650; 3-5 year view: Vertical integration could structurally move Cyient DLM from EMS to ODM (Original Design Manufacturer), commanding much higher multiples.</div>
+</div>
+</div><div class="db">&#9888; Data sourced from public sources. Not SEBI-registered investment advice.</div></div>
+
+<!-- TAB 6: FORENSICS -->
+<div id="tab-6" class="tp"><div class="c">
+<div class="g2">
+<div class="card"><div class="sec">Rating &amp; Financial Health</div>
+<table>
+<tr><td style="color:var(--muted);font-size:12px;">CRISIL Rating</td><td>A+/Positive (standalone, Oct 2025)</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">Prior Rating</td><td>AA(CE)/Stable (credit-enhanced — parent backed)</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">Migration</td><td style="color:var(--green);">Standalone A+/Positive — positive signal (no longer relies on Cyient parent guarantee)</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">Net Debt</td><td class="mono" style="color:var(--green);">Near-zero (D/E ~0.01x post IPO)</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">CFO FY25</td><td class="mono" style="color:var(--red);">-&#8377;62 Cr (negative — watch)</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">FCF Trend</td><td style="color:var(--green);">4 consecutive quarters positive FCF as of H1 FY26 — improving</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">H1 FY26 FCF</td><td class="mono" style="color:var(--green);">+&#8377;27 Cr (Q2 alone)</td></tr>
+<tr><td style="color:var(--muted);font-size:12px;">Audit Opinion</td><td>Unmodified (no qualifications)</td></tr>
+</table>
+</div>
+<div class="card"><div class="sec">Forensic Verdict</div>
+<div style="text-align:center;padding:12px 0;"><span class="badge bm" style="font-size:15px;padding:8px 20px;">&#9888; AMBER FLAGS</span></div>
+<div style="display:flex;flex-direction:column;gap:9px;margin-top:8px;">
+<div style="display:flex;gap:8px;"><span style="color:var(--red);font-size:14px;flex-shrink:0;">&#9888;</span><div style="font-size:13px;"><strong>Negative CFO FY25 (-&#8377;62 Cr):</strong> Cash from operations was negative despite &#8377;68 Cr PAT — working capital build-up (receivables from large BEL order and customer advance adjustments). Now improving: FCF positive for 4 consecutive quarters in FY26.</div></div>
+<div style="display:flex;gap:8px;"><span style="color:var(--amber);font-size:14px;flex-shrink:0;">&#9888;</span><div style="font-size:13px;"><strong>Revenue Decline vs Guided Recovery:</strong> Management has guided recovery multiple times. FY26 full-year revenue &#8377;1,262 Cr fell 17%. Execution track record vs guidance must improve before assigning full credit to FY27 guidance.</div></div>
+<div style="display:flex;gap:8px;"><span style="color:var(--amber);font-size:14px;flex-shrink:0;">&#9888;</span><div style="font-size:13px;"><strong>Independent Director Resignation (Aug 2025):</strong> Madan Pillutla resigned as Independent Director. Board composition weakened temporarily. Monitor replacement appointment quality.</div></div>
+<div style="display:flex;gap:8px;"><span style="color:var(--green);font-size:14px;flex-shrink:0;">&#10003;</span><div style="font-size:13px;"><strong>Near-Debt-Free:</strong> D/E ratio ~0.01x post IPO. Balance sheet pristine. No leverage risk. Strong financial foundation for growth capex without debt servicing pressure.</div></div>
+<div style="display:flex;gap:8px;"><span style="color:var(--green);font-size:14px;flex-shrink:0;">&#10003;</span><div style="font-size:13px;"><strong>Standalone A+ Credit Rating:</strong> Migration from parent-backed (AA CE) to standalone A+ confirms CRISIL's confidence in CDLM's own financial strength — independent of Cyient parent guarantee.</div></div>
+<div style="display:flex;gap:8px;"><span style="color:var(--green);font-size:14px;flex-shrink:0;">&#10003;</span><div style="font-size:13px;"><strong>Cyient Parent Backing:</strong> 74.7% owned by Cyient Ltd, a profitable listed technology company. Parent provides governance discipline, customer access, and credibility.</div></div>
+</div></div></div>
+</div><div class="db">&#9888; Data sourced from public sources. Not SEBI-registered investment advice.</div></div>
+
+<!-- TAB 7: VALUATION -->
+<div id="tab-7" class="tp"><div class="c">
+<div class="sec">PE Band Analysis</div>
+<div class="card">
+<div class="cw" style="height:240px;"><canvas id="dlPEChart"></canvas></div>
+<div class="g4" style="margin-top:14px;">
+<div style="text-align:center;padding:9px;border-radius:6px;background:var(--alt);"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Listed Low PE</div><div style="font-size:18px;font-weight:700;font-family:'Courier New',monospace;">25x</div><div style="font-size:11px;color:var(--muted);">(FY26 trough)</div></div>
+<div style="text-align:center;padding:9px;border-radius:6px;background:var(--alt);"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Current PE</div><div style="font-size:18px;font-weight:700;font-family:'Courier New',monospace;color:var(--orange);">32x</div><div style="font-size:11px;color:var(--muted);">(FY26 EPS &#8377;10.1)</div></div>
+<div style="text-align:center;padding:9px;border-radius:6px;background:var(--alt);"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Sector Avg PE</div><div style="font-size:18px;font-weight:700;font-family:'Courier New',monospace;">55x</div><div style="font-size:11px;color:var(--muted);">(Indian EMS peers)</div></div>
+<div style="text-align:center;padding:9px;border-radius:6px;background:var(--alt);"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Peak PE</div><div style="font-size:18px;font-weight:700;font-family:'Courier New',monospace;">70x</div><div style="font-size:11px;color:var(--muted);">(IPO euphoria)</div></div>
+</div>
+</div>
+<div class="sec">Bear / Base / Bull Scenarios (FY27)</div>
+<div class="tw card"><table>
+<thead><tr><th>Scenario</th><th>FY27E Revenue</th><th>EBITDA%</th><th>FY27E PAT</th><th>EPS</th><th>PE</th><th>Target</th><th>vs CMP &#8377;330</th></tr></thead>
+<tbody>
+<tr><td style="color:var(--red);font-weight:700;">Bear</td><td class="mono">&#8377;1,250 Cr</td><td class="mono">8%</td><td class="mono">&#8377;50 Cr</td><td class="mono">&#8377;6.9</td><td class="mono">22x</td><td class="mono" style="color:var(--red);">&#8377;152</td><td class="mono" style="color:var(--red);">-54%</td></tr>
+<tr><td style="color:var(--amber);font-weight:700;">Base</td><td class="mono">&#8377;1,520 Cr</td><td class="mono">10.5%</td><td class="mono">&#8377;100 Cr</td><td class="mono">&#8377;13.8</td><td class="mono">28x</td><td class="mono" style="color:var(--amber);">&#8377;386</td><td class="mono" style="color:var(--amber);">+17%</td></tr>
+<tr><td style="color:var(--green);font-weight:700;">Bull</td><td class="mono">&#8377;1,700 Cr</td><td class="mono">12%</td><td class="mono">&#8377;140 Cr</td><td class="mono">&#8377;19.3</td><td class="mono">32x</td><td class="mono" style="color:var(--green);">&#8377;618</td><td class="mono" style="color:var(--green);">+87%</td></tr>
+</tbody></table></div>
+<div class="card" style="margin-top:14px;"><div class="sec">Sector Valuation Framework</div>
+<div style="font-size:14px;line-height:1.7;">
+<p style="margin-bottom:10px;"><strong>Why Cyient DLM deserves a discount to EMS peers:</strong> Kaynes (105x), Syrma (40x), Avalon (55x) all trade at significant premiums. Cyient DLM at 32x reflects the market's skepticism about FY27 recovery after FY26's miss. This discount is partly justified — execution risk is real.</p>
+<p style="margin-bottom:10px;"><strong>The re-rating catalyst:</strong> If Q1 FY27 results show even 15% YoY revenue growth, the market will begin to price the recovery. A consistent 2-quarter recovery would likely re-rate CDLM from 32x to 40-45x on forward earnings — driving the stock to &#8377;450-550 range.</p>
+<p><strong>Bear case warning:</strong> Bear scenario implies 54% downside — thin-margin EMS companies can derate sharply when revenue misses. Position sizing accordingly.</p>
+</div></div>
+</div><div class="db">&#9888; Data sourced from public sources. Not SEBI-registered investment advice.</div></div>
+
+<!-- TAB 8: THESIS -->
+<div id="tab-8" class="tp"><div class="c">
+<div class="card" style="margin-bottom:16px;"><div class="sec">Investment Thesis</div>
+<div style="font-size:14px;line-height:1.8;">
+<p style="margin-bottom:12px;"><strong>Why Cyient DLM?</strong> This is a structural story temporarily impaired by cyclical headwinds. The structural argument: India's defence indigenisation (Atmanirbhar Bharat), global China+1 supply chain restructuring, and aerospace production recovery all point to multi-year demand growth for certified Indian EMS. Cyient DLM's AS9100D + ITAR qualifications are among the rarest in Indian EMS — perhaps 5-6 companies can meet global aerospace OEM requirements. This creates a long-term competitive moat that commodity EMS players cannot replicate.</p>
+<p style="margin-bottom:12px;"><strong>Why is it discounted?</strong> FY26 was objectively bad. Revenue fell 17%. The BEL order completed, creating a &#8377;258 Cr hole in annual revenue with no immediate replacement. West Asia supply chain disruptions then delayed remaining order execution. These two concurrent headwinds created the worst possible earnings optics for a newly-listed company trying to establish credibility. The stock fell from &#8377;540 to &#8377;265 — a 51% decline. At &#8377;330, the bad news is priced in.</p>
+<p style="margin-bottom:12px;"><strong>What changes in FY27?</strong> The BEL base effect normalises in Q1 FY27 itself — the first quarter comparison is no longer against the mega-order quarter. West Asia supply chain management is being addressed through advance ordering of long-lead items. The &#8377;2,416 Cr order book — the largest ever and growing — provides concrete revenue visibility. Q4 FY26's 22% QoQ revenue recovery and PAT doubling is the first hard evidence that the turn has arrived. Management's confidence on "YoY growth in all 4 quarters of FY27" carries more weight when supported by a record backlog.</p>
+<p><strong>The constraint:</strong> Cyient DLM is a 6/10 conviction because execution risk is real and demonstrated. The management credibility gap (multiple recovery guidance misses) means this is an evidence-based buy — not a thesis buy. Buy on confirmation. The Q1 FY27 result is the primary verification event. If Q1 FY27 shows even 10% YoY growth, upgrade to 8/10 and add.</p>
+</div></div>
+<div class="sec">Key Monitorables</div>
+<div class="card">
+<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1.5fr;gap:8px;padding:8px 0;border-bottom:2px solid var(--sep);font-weight:700;font-size:11px;text-transform:uppercase;color:var(--muted);"><div>Metric</div><div>Target</div><div>Frequency</div><div>Red Flag</div></div>
+<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1.5fr;gap:8px;padding:9px 0;border-bottom:1px solid var(--sep);font-size:13px;"><div><strong>Q1 FY27 Revenue</strong></div><div class="mono">&gt;&#8377;380 Cr</div><div>One-time</div><div style="color:var(--red);">Below &#8377;300 Cr (recovery thesis fails)</div></div>
+<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1.5fr;gap:8px;padding:9px 0;border-bottom:1px solid var(--sep);font-size:13px;"><div><strong>EBITDA Margin</strong></div><div class="mono">&gt;10%</div><div>Quarterly</div><div style="color:var(--red);">Below 8% (deleverage concern)</div></div>
+<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1.5fr;gap:8px;padding:9px 0;border-bottom:1px solid var(--sep);font-size:13px;"><div><strong>Order Book</strong></div><div class="mono">&gt;&#8377;2,000 Cr</div><div>Quarterly</div><div style="color:var(--red);">Below &#8377;1,500 Cr (demand soft)</div></div>
+<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1.5fr;gap:8px;padding:9px 0;border-bottom:1px solid var(--sep);font-size:13px;"><div><strong>FCF</strong></div><div class="mono">Positive</div><div>Quarterly</div><div style="color:var(--red);">Negative CFO 2 quarters in a row</div></div>
+<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1.5fr;gap:8px;padding:9px 0;font-size:13px;"><div><strong>West Asia Supply Chain</strong></div><div class="mono">Stable</div><div>Monthly</div><div style="color:var(--red);">Re-escalation causing material delays</div></div>
+</div>
+<div style="text-align:center;margin-top:20px;"><span class="bacc" style="font-size:16px;padding:10px 28px;border-radius:30px;">ACCUMULATE &mdash; 6/10 &mdash; Buy at &#8377;280-350 | Base Target &#8377;400 | Upgrade on Q1 FY27 confirmation</span></div>
+</div><div class="db">&#9888; Data sourced from public sources. Not SEBI-registered investment advice.</div></div>
+
+<!-- TAB 9: RISKS -->
+<div id="tab-9" class="tp"><div class="c">
+<div class="sec">Risk Matrix</div>
+<div class="tw card"><table>
+<thead><tr><th>Risk</th><th>Category</th><th>Prob.</th><th>Impact</th><th>Mitigation / Monitor</th></tr></thead>
+<tbody>
+<tr><td><strong>FY27 revenue recovery delayed again</strong></td><td>Execution</td><td><span class="badge bm">MED</span></td><td><span class="badge bh">HIGH</span></td><td>Watch Q1 FY27 results closely. &#8377;2,416 Cr backlog supports but conversion risk remains.</td></tr>
+<tr><td><strong>West Asia re-escalation</strong></td><td>Macro</td><td><span class="badge bm">MED</span></td><td><span class="badge bm">MED</span></td><td>Management ordering long-lead items in advance. Diversifying component sourcing.</td></tr>
+<tr><td><strong>EMS margin structural ceiling (~10%)</strong></td><td>Structural</td><td><span class="badge bm">MED</span></td><td><span class="badge bm">MED</span></td><td>Vertical integration (cables, machining) is the margin expansion thesis. Watch capex deployment.</td></tr>
+<tr><td><strong>Defence approval delays (India)</strong></td><td>Regulatory</td><td><span class="badge bm">MED</span></td><td><span class="badge bm">MED</span></td><td>Inherent in India defence procurement. Long sales cycles. Not in 1-year thesis.</td></tr>
+<tr><td><strong>New customer ramp takes longer</strong></td><td>Sales</td><td><span class="badge bm">MED</span></td><td><span class="badge bh">HIGH</span></td><td>BEL was a large anchor — replacement takes multiple smaller customers. Revenue lumpiness continues.</td></tr>
+<tr><td><strong>Europe M&amp;A integration risk</strong></td><td>Strategic</td><td><span class="badge bl">LOW</span></td><td><span class="badge bm">MED</span></td><td>Cross-border M&amp;A is complex. IPO proceeds largely deployed — future acquisitions need new capital raise.</td></tr>
+<tr><td><strong>Semiconductor component shortage</strong></td><td>Supply</td><td><span class="badge bl">LOW</span></td><td><span class="badge bm">MED</span></td><td>Post-2022 chip shortage easing. Long lead-time ordering strategy addresses this.</td></tr>
+<tr><td><strong>Parent Cyient Ltd strategy change</strong></td><td>Corporate</td><td><span class="badge bl">LOW</span></td><td><span class="badge bl">LOW</span></td><td>Cyient's DLM subsidiary is strategic for them. No near-term risk of de-prioritisation.</td></tr>
+</tbody></table></div>
+<div class="card" style="margin-top:14px;"><div class="sec">Key Risk Deep Dive: Revenue Execution Risk</div>
+<div style="font-size:14px;line-height:1.7;"><p>The single biggest risk for Cyient DLM is whether FY27 recovery actually materialises. Here's what needs to go right: (1) BEL and comparable defence orders need to be replaced by new customers — H1 FY26 order intake of &#8377;1,000 Cr (+130% YoY) suggests this is happening; (2) West Asia supply chain must remain stable enough to receive critical components on schedule; (3) Q4 FY26's 22% QoQ revenue recovery must continue in Q1 FY27 — the first YoY comparison that isn't against the BEL mega-order quarter. If all three align, &#8377;1,500 Cr FY27 revenue is achievable and the stock deserves &#8377;380-400. If any one fails, re-evaluate.</p></div>
+</div>
+</div><div class="db">&#9888; Data sourced from public sources. Not SEBI-registered investment advice.</div></div>
+
+<!-- TAB 10: CONCALL -->
+<div id="tab-10" class="tp"><div class="c">
+<div class="cc">
+<div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+<span style="font-weight:700;font-size:14px;">Q4 FY26 Concall</span>
+<span style="color:var(--muted);font-size:12px;">April 21, 2026 | MD: Rajendra Velagapudi</span>
+<span class="badge bm">CAUTIOUSLY CONFIDENT</span>
+</div>
+<div class="sec">Key Q&amp;A Highlights</div>
+<div style="display:flex;flex-direction:column;gap:12px;">
+<div class="card" style="padding:12px;">
+<div style="font-weight:700;font-size:13px;color:var(--orange);margin-bottom:4px;">Q: Revenue guidance for FY27?</div>
+<div style="font-size:13px;color:var(--sec);">"While we are not providing specific revenue guidance, we expect year-over-year growth in all four quarters of FY27, driven by a strong order backlog and pipeline." — CFO R.M. Subramanian</div>
+</div>
+<div class="card" style="padding:12px;">
+<div style="font-weight:700;font-size:13px;color:var(--orange);margin-bottom:4px;">Q: Margin trajectory?</div>
+<div style="font-size:13px;color:var(--sec);">"We are confident in sustaining double-digit EBITDA margins, with potential for improvement as volumes grow and operating leverage kicks in." — R.M. Subramanian, CFO</div>
+</div>
+<div class="card" style="padding:12px;">
+<div style="font-weight:700;font-size:13px;color:var(--orange);margin-bottom:4px;">Q: West Asia impact?</div>
+<div style="font-size:13px;color:var(--sec);">"The West Asia crisis primarily affected our supply chain, causing delays in material shipments. We are taking actions to mitigate these impacts by ordering long-lead items in advance for FY27." — Management</div>
+</div>
+<div class="card" style="padding:12px;">
+<div style="font-weight:700;font-size:13px;color:var(--orange);margin-bottom:4px;">Q: Order book definition?</div>
+<div style="font-size:13px;color:var(--sec);">"The order book consists of purchase orders received from customers that are executable within the financial year or beyond. We do not include total contract value (TCV) or long-term contracts in the order book. The definition has remained consistent, and the order book for FY27 is strong and solid." — CEO Rajendra Velagapudi</div>
+</div>
+<div class="card" style="padding:12px;">
+<div style="font-weight:700;font-size:13px;color:var(--orange);margin-bottom:4px;">Q: Acquisition strategy?</div>
+<div style="font-size:13px;color:var(--sec);">"We continue to look for both organic and inorganic growth opportunities. Our strategy involves evaluating potential acquisitions based on product gaps and geographical expansion. We remain opportunistic and will pursue acquisitions that fit our growth strategy and portfolio needs." — CFO</div>
+</div>
+</div>
+<div style="margin-top:12px;padding:10px;border-radius:6px;background:var(--hi);font-size:12px;"><strong>Analyst Reactions:</strong> Motilal Oswal maintains BUY &#8377;470. JPMorgan Overweight &#8377;400 (despite 14% revenue miss — expects ~20% FY27 growth). Macquarie cuts to Neutral &#8377;350 — weak execution. Prabhudas Lilladher downgrades to Hold &#8377;370. PL Capital: revenue and EBITDA 30% CAGR FY26-28 on order conversion. <strong>Consensus: cautious optimism, wait for Q1 FY27 confirmation before conviction buy.</strong></div>
+</div>
+</div><div class="db">&#9888; Data sourced from public sources. Not SEBI-registered investment advice.</div></div>
+
+<!-- TAB 11: CAP. ALLOC. -->
+<div id="tab-11" class="tp"><div class="c">
+<div class="g2">
+<div class="card"><div class="sec">Revenue vs Capex Trend (&#8377; Cr)</div><div class="cw" style="height:220px;"><canvas id="dlCapexChart"></canvas></div></div>
+<div class="card"><div class="sec">Order Book Build (&#8377; Cr)</div><div class="cw" style="height:220px;"><canvas id="dlObChart"></canvas></div></div>
+</div>
+<div class="sec">Capital Allocation Assessment</div>
+<div class="g2">
+<div class="card">
+<div style="display:flex;flex-direction:column;gap:10px;">
+<div style="display:flex;gap:8px;"><span style="color:var(--green);">&#10003;</span><div style="font-size:13px;"><strong>Near-zero debt post-IPO:</strong> D/E ~0.01x. IPO proceeds used to reduce debt and fund working capital. Clean balance sheet is the primary capital allocation positive.</div></div>
+<div style="display:flex;gap:8px;"><span style="color:var(--green);">&#10003;</span><div style="font-size:13px;"><strong>FCF turning positive:</strong> 4 consecutive quarters of positive FCF as of H1 FY26 after negative FY25. Critical indicator that working capital is normalising as BEL receivables clear.</div></div>
+<div style="display:flex;gap:8px;"><span style="color:var(--green);">&#10003;</span><div style="font-size:13px;"><strong>Disciplined vertical integration capex:</strong> Investing in cables, sheet metal, machining capabilities — each with clear margin accretion rationale. Not speculative capex.</div></div>
+</div>
+</div>
+<div class="card">
+<div style="display:flex;flex-direction:column;gap:10px;">
+<div style="display:flex;gap:8px;"><span style="color:var(--red);">&#10007;</span><div style="font-size:13px;"><strong>Negative CFO FY25 (-&#8377;62 Cr):</strong> Despite &#8377;68 Cr PAT, cash from ops was negative — working capital consumed by BEL receivables and customer advance changes. Watch this normalise in FY27.</div></div>
+<div style="display:flex;gap:8px;"><span style="color:var(--amber);">&#8594;</span><div style="font-size:13px;"><strong>Zero dividend, all reinvested:</strong> Company pays no dividend. All profits and IPO proceeds directed to growth. ROCE at 7-8% is below cost of capital — must improve to justify reinvestment logic.</div></div>
+<div style="display:flex;gap:8px;"><span style="color:var(--amber);">&#8594;</span><div style="font-size:13px;"><strong>IPO proceeds largely deployed:</strong> Future M&amp;A would require new equity raise (dilutive) or debt raise. Balance sheet flexibility is constrained at this stage.</div></div>
+</div>
+</div>
+</div>
+</div><div class="db">&#9888; Data sourced from public sources. Not SEBI-registered investment advice.</div></div>
+
+<!-- TAB 12: OWNERSHIP -->
+<div id="tab-12" class="tp"><div class="c">
+<div class="g2">
+<div class="card"><div class="sec">Shareholding Snapshot (Latest)</div>
+<div class="cw" style="height:220px;"><canvas id="dlShChart"></canvas></div>
+</div>
+<div class="card"><div class="sec">Key Shareholder Details</div>
+<div class="tw"><table>
+<thead><tr><th>Category / Holder</th><th>Stake</th><th>Comment</th></tr></thead>
+<tbody>
+<tr><td><strong>Cyient Ltd (Promoter)</strong></td><td class="mono" style="color:var(--green);">74.7%</td><td>Parent; strategic anchor. Strong governance.</td></tr>
+<tr><td><strong>HDFC Mutual Fund (Defence Fund)</strong></td><td class="mono">9.85%</td><td>Largest public shareholder. Conviction institutional buy.</td></tr>
+<tr><td><strong>FIIs (total)</strong></td><td class="mono">2.38%</td><td>37 FIIs holding. Small but growing.</td></tr>
+<tr><td><strong>Individual investors</strong></td><td class="mono">14.88%</td><td>High retail participation.</td></tr>
+</tbody></table></div>
+<div style="margin-top:12px;padding:10px;border-radius:6px;background:var(--alt);font-size:13px;">
+<strong>Ownership Quality:</strong> HDFC Defence Fund's 9.85% is a major institutional endorsement. Defence Fund mandates exposure to defence-related stocks — CDLM's defence EMS positioning makes it a natural holding. Any increase in HDFC Defence Fund allocation would directly benefit CDLM.
+</div>
+<div style="margin-top:10px;padding:10px;border-radius:6px;background:var(--hi);font-size:13px;">
+<strong>Promoter Lock-Up:</strong> Cyient Ltd's 74.7% is stable — no dilution signals. Parent views DLM as strategic subsidiary; unlikely to reduce stake. High promoter holding limits free float but provides governance stability.
+</div>
+</div>
+</div>
+<div class="sec">Governance Notes</div>
+<div class="g2">
+<div class="card">
+<div style="display:flex;flex-direction:column;gap:10px;">
+<div style="border-left:3px solid var(--green);padding-left:10px;"><div style="font-weight:700;font-size:13px;">Cyient Parent Governance Framework</div><div style="font-size:12px;color:var(--sec);">As a subsidiary of listed Cyient Ltd, CDLM benefits from Cyient's governance systems, compliance frameworks, and board oversight. Reduces corporate governance risk vs standalone promoter-run small-caps.</div></div>
+<div style="border-left:3px solid var(--green);padding-left:10px;"><div style="font-weight:700;font-size:13px;">CRISIL A+ Standalone Rating (Unenhanced)</div><div style="font-size:12px;color:var(--sec);">Migration from parent credit-enhanced AA(CE) to standalone A+/Positive shows CDLM's own balance sheet can support A+ rating without parent guarantee. Positive governance signal.</div></div>
+</div>
+</div>
+<div class="card">
+<div style="display:flex;flex-direction:column;gap:10px;">
+<div style="border-left:3px solid var(--amber);padding-left:10px;"><div style="font-weight:700;font-size:13px;">Independent Director Vacancy (Aug 2025)</div><div style="font-size:12px;color:var(--sec);">Madan Pillutla resigned as Independent Director in August 2025. Board now needs replacement to maintain statutory compliance and governance quality. Monitor appointment.</div></div>
+<div style="border-left:3px solid var(--amber);padding-left:10px;"><div style="font-weight:700;font-size:13px;">New CFO (Oct 2025)</div><div style="font-size:12px;color:var(--sec);">R.M. Subramanian appointed CFO October 2025. Change in key finance leadership during a recovery year — watch first full-year financial under new CFO for continuity of financial discipline.</div></div>
+</div>
+</div>
+</div>
+</div><div class="db">&#9888; Data sourced from public sources. Not SEBI-registered investment advice.</div></div>
+
+<!-- TAB 13: EVENTS -->
+<div id="tab-13" class="tp"><div class="c">
+<div class="sec">Event Timeline</div>
+<div class="tw card"><table>
+<thead><tr><th>Date</th><th>Type</th><th>Headline</th><th>Impact</th></tr></thead>
+<tbody>
+<tr><td>Apr 2026</td><td><span class="badge bh">RESULTS</span></td><td>Q4 FY26: Revenue &#8377;369 Cr (+22% QoQ), PAT &#8377;22 Cr, EBITDA 11.7%</td><td>Sequential recovery validates thesis. Order book &#8377;2,416 Cr — record. Stock +6.8% next day.</td></tr>
+<tr><td>Apr 2026</td><td><span class="badge bl">ORDERS</span></td><td>FY26 full-year order book &#8377;2,416 Cr (+27% YoY) — 10-quarter high</td><td>Book-to-bill &gt;1 for all 4 quarters of FY26. Revenue visibility for FY27 established.</td></tr>
+<tr><td>Apr 2026</td><td><span class="badge bm">ANALYST</span></td><td>Motilal Oswal adds CYIENTDLM to May 2026 picks with BUY &#8377;470</td><td>Institutional conviction call. Post-Q4 results upgrade.</td></tr>
+<tr><td>Jan 2026</td><td><span class="badge bm">RESULTS</span></td><td>Q3 FY26: Revenue &#8377;303 Cr (-32% YoY), EBITDA 9%, PAT &#8377;11 Cr — weakest quarter</td><td>West Asia disruptions peak impact. Revenue troughs. Stock hits 52W low zone.</td></tr>
+<tr><td>Oct 2025</td><td><span class="badge bl">RATING</span></td><td>CRISIL migrates to A+/Positive standalone from AA(CE)/Stable</td><td>Strong governance signal — standalone rating confirmation. Lowers cost of funds.</td></tr>
+<tr><td>Oct 2025</td><td><span class="badge bm">MGMT</span></td><td>R.M. Subramanian joins as CFO</td><td>New finance leadership. Prior CFO transitions to Cyient Group strategic role.</td></tr>
+<tr><td>Sep 2025</td><td><span class="badge bl">RESULTS</span></td><td>Q2 FY26: H1 order intake &#8377;1,000 Cr (+130% YoY); 4 consecutive positive FCF quarters</td><td>Order intake surge is primary positive. FCF positive signals working capital normalisation.</td></tr>
+<tr><td>Aug 2025</td><td><span class="badge bm">GOVERNANCE</span></td><td>Independent Director Madan Pillutla resigns (Aug 18, 2025)</td><td>Board weakened temporarily. Watch replacement appointment quality.</td></tr>
+<tr><td>FY23 (IPO)</td><td><span class="badge bo">IPO</span></td><td>Listed on NSE/BSE at &#8377;435-445 range</td><td>Parent Cyient divested stake. IPO proceeds used to retire debt and fund working capital.</td></tr>
+</tbody></table></div>
+<div class="sec">Upcoming Catalysts</div>
+<div class="g3">
+<div class="card" style="padding:13px;border-left:4px solid var(--orange);"><div style="font-weight:700;font-size:13px;">Q1 FY27 Results — CRITICAL</div><div style="font-size:12px;color:var(--muted);margin-top:3px;">Most important near-term event. First quarter with YoY comparison against post-BEL base. Even 10-15% YoY growth would validate recovery thesis and likely re-rate stock.</div></div>
+<div class="card" style="padding:13px;border-left:4px solid var(--green);"><div style="font-weight:700;font-size:13px;">Defence Orders Update</div><div style="font-size:12px;color:var(--muted);margin-top:3px;">Watch for DRDO/HAL/new defence customer order announcements. Defence segment collapsed to 10% of mix — any new defence MSA is a positive catalyst.</div></div>
+<div class="card" style="padding:13px;border-left:4px solid var(--blue);"><div style="font-weight:700;font-size:13px;">Europe M&amp;A Announcement</div><div style="font-size:12px;color:var(--muted);margin-top:3px;">Management actively evaluating European acquisitions. Any announcement would significantly expand revenue base and re-rate the stock from domestic EMS to global EMS premium.</div></div>
+<div class="card" style="padding:13px;border-left:4px solid var(--green);"><div style="font-weight:700;font-size:13px;">Vertical Integration Milestones</div><div style="font-size:12px;color:var(--muted);margin-top:3px;">Cable, sheet metal, machining in-house capabilities. When EBITDA crosses 12% sustainably, will confirm margin expansion thesis.</div></div>
+<div class="card" style="padding:13px;border-left:4px solid var(--amber);"><div style="font-weight:700;font-size:13px;">Independent Director Appointment</div><div style="font-size:12px;color:var(--muted);margin-top:3px;">Board governance restoration. Watch quality of replacement ID appointment.</div></div>
+<div class="card" style="padding:13px;border-left:4px solid var(--amber);"><div style="font-weight:700;font-size:13px;">West Asia Stability Monitor</div><div style="font-size:12px;color:var(--muted);margin-top:3px;">Any re-escalation in Middle East conflict is a near-term risk for supply chain. Monthly monitor of component availability and lead-time normalisation.</div></div>
+</div>
+</div><div class="db">&#9888; Data sourced from public sources (Screener.in, Groww, TradeBrains, GuruFocus, Whalesbook, Tickertape). Not SEBI-registered investment advice. Research date: April 27, 2026.</div></div>
+
+<script>
+function tc(){return document.documentElement.getAttribute('data-theme')==='dark'?'#CBD5E1':'#374151';}
+function toggleTheme(){const h=document.documentElement;h.setAttribute('data-theme',h.getAttribute('data-theme')==='dark'?'light':'dark');rbc();}
+const tbs=document.querySelectorAll('.tb');
+function showTab(n){document.querySelectorAll('.tp').forEach((p,i)=>p.classList.toggle('active',i===n));tbs.forEach((b,i)=>b.classList.toggle('active',i===n));window.scrollTo({top:0,behavior:'smooth'});}
+let charts=[];
+function dch(){charts.forEach(c=>{try{c.destroy();}catch(e){}});charts=[];}
+function rbc(){dch();setTimeout(bc,60);}
+function bc(){
+Chart.defaults.font.size=13;Chart.defaults.color=tc();
+const gc='rgba(100,116,139,0.15)';
+const pie=document.getElementById('dlPieChart');
+if(pie){charts.push(new Chart(pie,{type:'doughnut',data:{labels:['Aerospace','Industrial','MedTech','Defence','Other'],datasets:[{data:[39,28,21,10,2],backgroundColor:['#0F1F3D','#E8701A','#16A34A','#1D4ED8','#9CA3AF'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},color:tc(),boxWidth:12}}}}}))}
+const rv=document.getElementById('dlRevChart');
+if(rv){const yrs=['FY22','FY23','FY24','FY25','FY26'];const rev=[620,832,1193,1520,1262];charts.push(new Chart(rv,{type:'bar',data:{labels:yrs,datasets:[{label:'Revenue (Cr)',data:rev,backgroundColor:rev.map((v,i)=>i===4?'rgba(220,38,38,0.75)':'rgba(15,31,61,0.7)'),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc()}}},scales:{x:{ticks:{color:tc()},grid:{display:false}},y:{ticks:{color:tc()},grid:{color:gc}}}}}))}
+const mg=document.getElementById('dlMarginChart');
+if(mg){const yrs=['FY22','FY23','FY24','FY25','FY26'];charts.push(new Chart(mg,{type:'bar',data:{labels:yrs,datasets:[{label:'EBITDA %',data:[5,6,8,8,9],backgroundColor:'rgba(15,31,61,0.65)',yAxisID:'y',borderRadius:3},{label:'PAT (Cr)',data:[12,32,46,68,73],type:'line',borderColor:'#E8701A',tension:0.3,pointRadius:4,yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc()}}},scales:{x:{ticks:{color:tc()},grid:{display:false}},y:{ticks:{color:tc(),callback:v=>v+'%'},grid:{color:gc},min:0,max:15,title:{display:true,text:'EBITDA%',color:tc()}},y1:{position:'right',ticks:{color:tc()},grid:{display:false},title:{display:true,text:'PAT (Cr)',color:tc()}}}}}))}
+const pe=document.getElementById('dlPEChart');
+if(pe){charts.push(new Chart(pe,{type:'line',data:{labels:['IPO (FY23)','FY24','FY25','FY26'],datasets:[{label:'Trailing PE',data:[65,55,45,32],borderColor:'#E8701A',tension:0.4,pointRadius:5,fill:false},{label:'Sector Avg (55x)',data:[55,55,55,55],borderColor:'#16A34A',borderDash:[5,5],pointRadius:0},{label:'Current (32x)',data:[32,32,32,32],borderColor:'#DC2626',borderDash:[3,3],pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc(),font:{size:11},boxWidth:14}}},scales:{x:{ticks:{color:tc()},grid:{display:false}},y:{ticks:{color:tc(),callback:v=>v+'x'},grid:{color:gc}}}}}))}
+const cx=document.getElementById('dlCapexChart');
+if(cx){charts.push(new Chart(cx,{type:'bar',data:{labels:['FY22','FY23','FY24','FY25','FY26'],datasets:[{label:'Revenue',data:[620,832,1193,1520,1262],backgroundColor:'rgba(15,31,61,0.7)',borderRadius:3},{label:'Order Book',data:[800,1000,1500,1900,2416],backgroundColor:'rgba(22,163,74,0.6)',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc()}}},scales:{x:{ticks:{color:tc()},grid:{display:false}},y:{ticks:{color:tc()},grid:{color:gc}}}}}))}
+const ob=document.getElementById('dlObChart');
+if(ob){charts.push(new Chart(ob,{type:'line',data:{labels:['Q1FY25','Q2FY25','Q3FY25','Q4FY25','Q1FY26','Q2FY26','Q3FY26','Q4FY26'],datasets:[{label:'Order Book (Cr)',data:[1400,1600,1700,1900,2000,2100,2200,2416],borderColor:'#16A34A',backgroundColor:'rgba(22,163,74,0.1)',tension:0.3,pointRadius:4,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc()}}},scales:{x:{ticks:{color:tc(),font:{size:9},maxRotation:45},grid:{display:false}},y:{ticks:{color:tc()},grid:{color:gc},min:1000}}}}))}
+const sh=document.getElementById('dlShChart');
+if(sh){charts.push(new Chart(sh,{type:'doughnut',data:{labels:['Promoter (Cyient)','HDFC Def Fund','Individual','FII','Others'],datasets:[{data:[74.7,9.85,14.88,2.38,8.19],backgroundColor:['#0F1F3D','#16A34A','#E8701A','#1D4ED8','#9CA3AF'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},color:tc(),boxWidth:12}}}}}))}
+}
+document.addEventListener('DOMContentLoaded',bc);
+</script>
+</body></html>
