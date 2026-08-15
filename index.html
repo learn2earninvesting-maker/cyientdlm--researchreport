@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cyient DLM — Hard to Replace?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#04080f;--panel:#0a1220;--bd:#17233b;--accent:#f0a500;--tx:#e8edf6;--mut:#8a94a6;--faint:#5a6577;--red:#ff5964;--green:#37d39b;--blue:#5aa9ff;--purple:#b48cff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:'Syne',sans-serif;margin:0}
+.mono{font-family:'JetBrains Mono',monospace}
+header{padding:22px 16px 14px;border-bottom:1px solid var(--bd);background:linear-gradient(180deg,#07101d,#04080f)}
+header .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+header h1{font-size:24px;font-weight:800;margin-top:6px;line-height:1.15}
+header p{color:var(--mut);font-size:13.5px;margin:8px 0 0;max-width:760px;line-height:1.55}
+.badge{display:inline-block;margin-top:12px;padding:6px 12px;border-radius:999px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:rgba(240,165,0,.12);border:1px solid rgba(240,165,0,.45);color:var(--accent)}
+nav{position:sticky;top:0;z-index:20;background:rgba(4,8,15,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--bd);overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+.tabs{display:flex;gap:2px;padding:0 10px;min-width:max-content}
+.tab{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);background:none;border:0;border-bottom:2px solid transparent;padding:14px 12px;cursor:pointer;white-space:nowrap}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:14px 16px 4px}
+.kpi{background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:12px}
+.kpi .l{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.kpi .v{font-family:'JetBrains Mono',monospace;font-size:19px;font-weight:700;margin-top:5px}
+.kpi .s{font-size:11px;color:var(--mut);margin-top:3px}
+main{padding:10px 16px 60px;max-width:1000px;margin:0 auto}
+.panel{display:none}.panel.active{display:block}
+.sect-title{font-size:19px;font-weight:700;margin-top:14px}
+.sect-desc{color:var(--mut);font-size:13px;margin:6px 0 14px;line-height:1.5}
+.card{background:var(--panel);border:1px solid var(--bd);border-radius:14px;padding:15px;margin-bottom:12px}
+.card h3{font-size:14.5px;font-weight:700;margin-bottom:8px}
+.card p{font-size:13.5px;line-height:1.65;color:#cfd7e4;margin:0 0 8px}
+.card p:last-child{margin-bottom:0}
+ul{margin:0;padding-left:18px}
+li{font-size:13.5px;line-height:1.7;color:#cfd7e4;margin-bottom:7px}
+li b{color:var(--tx)}
+.callout{border-left:3px solid var(--accent);background:rgba(240,165,0,.07);border-radius:0 10px 10px 0;padding:12px 14px;margin:12px 0;font-size:13.5px;line-height:1.6}
+.callout.red{border-left-color:var(--red);background:rgba(255,89,100,.07)}
+.callout.green{border-left-color:var(--green);background:rgba(55,211,155,.07)}
+.callout.blue{border-left-color:var(--blue);background:rgba(90,169,255,.07)}
+.callout b{color:var(--tx)}
+blockquote{margin:10px 0;padding:12px 14px;border-left:3px solid var(--purple);background:rgba(180,140,255,.06);border-radius:0 10px 10px 0;font-size:13px;line-height:1.65;color:#cfd7e4;font-style:italic}
+.tw{overflow-x:auto;margin:10px 0;border:1px solid var(--bd);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:520px}
+th{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);text-align:left;padding:10px 12px;background:#08101c;border-bottom:1px solid var(--bd)}
+td{padding:10px 12px;font-size:12.8px;border-bottom:1px solid rgba(23,35,59,.7);color:#cfd7e4;vertical-align:top}
+td.n{font-family:'JetBrains Mono',monospace}
+tr:last-child td{border-bottom:0}
+.pos{color:var(--green)}.neg{color:var(--red)}
+.pill{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px}
+.p-hi{background:rgba(55,211,155,.14);color:var(--green)}
+.p-md{background:rgba(240,165,0,.14);color:var(--accent)}
+.p-lo{background:rgba(255,89,100,.14);color:var(--red)}
+.chartbox{background:var(--panel);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+.chartbox h3{font-size:13.5px;margin-bottom:4px}
+.chartbox .cap{font-size:11.5px;color:var(--faint);margin-bottom:10px}
+.wrap{position:relative;height:260px}
+.src{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);margin-top:8px}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0}
+.flow span{font-family:'JetBrains Mono',monospace;font-size:10.5px;padding:7px 10px;border:1px solid var(--bd);border-radius:8px;background:#08101c}
+.flow i{color:var(--accent);font-style:normal}
+@media(min-width:900px){.kpis{grid-template-columns:repeat(4,1fr)}.tabs{justify-content:center}header h1{font-size:30px}main{padding-left:24px;padding-right:24px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Report → Dashboard · NSE/BSE</div>
+  <h1>Cyient DLM</h1>
+  <p>An indispensable niche builder, priced for a flawless execution ramp. The moat in design-led, safety-critical electronics is real — but the "can build anything" story currently runs ahead of cash generation.</p>
+  <div class="badge">Verdict · Hard to replace on capability, not yet on cash</div>
+</header>
+
+<nav><div class="tabs" id="tabs"></div></nav>
+
+<div class="kpis">
+  <div class="kpi"><div class="l">Return on capital (FY26)</div><div class="v" style="color:var(--red)">10.2%</div><div class="s">flat ~10% for three years</div></div>
+  <div class="kpi"><div class="l">Plant utilisation</div><div class="v">50–60%</div><div class="s">on 2 shifts; 3rd shift untapped</div></div>
+  <div class="kpi"><div class="l">Order book (FY26)</div><div class="v" style="color:var(--green)">$262 mn</div><div class="s">net addition of $55 mn</div></div>
+  <div class="kpi"><div class="l">Price to earnings</div><div class="v" style="color:var(--red)">67.3x</div><div class="s">free cash flow yield 0.2%</div></div>
+</div>
+
+<main>
+
+<!-- VERDICT -->
+<section class="panel active" id="p0">
+  <h2 class="sect-title">The one-line answer</h2>
+  <p class="sect-desc">Where the moat is genuine, and where the numbers refuse to cooperate.</p>
+
+  <div class="callout"><b>Verdict:</b> Cyient DLM is becoming genuinely hard to replace in design-led, safety-critical electronics. The moat is real — NADCAP/AS9100 certifications, multi-decade anchor contracts, a 2-shift plant running at roughly 55% utilisation. The balance sheet is not yet cooperating.</div>
+
+  <div class="callout red"><b>The three problems:</b> return on capital employed has sat at 10–10.5% for three years; cumulative operating cash flow is negative against cumulative profit; and the shares trade at 67x earnings with a 0.2% free-cash-flow yield. The thesis rests entirely on the 3rd-shift leverage and the design-led mix actually materialising on schedule.</div>
+
+  <div class="card">
+    <h3>What genuinely raises the barrier</h3>
+    <ul>
+      <li><b>Certifications you cannot buy quickly.</b> First in India to get NADCAP accreditation for circuit card assembly, and among the first AS9100C aerospace-certified electronics plants.</li>
+      <li><b>Contracts measured in decades.</b> A 16-year Honeywell agreement; a Boeing 787 production contract.</li>
+      <li><b>A doubling of revenue without a new factory,</b> if a third shift is added.</li>
+    </ul>
+  </div>
+
+  <div class="callout blue"><b>The metric to watch is cash conversion, not the order book.</b> If working capital starts releasing while utilisation climbs past 60%, the moat finally meets the multiple.</div>
+</section>
+
+<!-- VALUE CHAIN -->
+<section class="panel" id="p1">
+  <h2 class="sect-title">Value chain &amp; the B2S shift</h2>
+  <p class="sect-desc">The full chain an electronics manufacturer can touch — deliberately positioned where volume economics break down.</p>
+
+  <div class="flow">
+    <span>Raw material</span><i>→</i><span>Components</span><i>→</i><span>Machinery</span><i>→</i><span>Manufacturing</span><i>→</i><span>Systems</span><i>→</i><span>End product</span>
+  </div>
+
+  <div class="tw"><table>
+    <tr><th>Stage</th><th>What Cyient DLM does</th></tr>
+    <tr><td class="n">Raw material</td><td>Semiconductors, printed circuit boards, rare-earth-dependent materials; supply risk actively tracked (CHIPS Act, China export curbs, Taiwan quake)</td></tr>
+    <tr><td class="n">Components</td><td>350+ supplier ecosystem managed on a Kinaxis visibility platform for continuity, quality and cost</td></tr>
+    <tr><td class="n">Machinery</td><td>9 surface-mount and 7 through-hole lines, 936,100 components per hour; CNC precision machining for tight-tolerance metals and alloys</td></tr>
+    <tr><td class="n">Manufacturing</td><td>Circuit board assembly, cable harness, precision machining, box build; NADCAP / AS9100 / ISO 13485 accredited</td></tr>
+    <tr><td class="n">Systems</td><td>Box build — from a single housed board to multi-rack cabinets with electromechanical integration and functional testing</td></tr>
+    <tr><td class="n">End product</td><td>Aerospace &amp; Defence, Medical, Industrial, Automotive — sectors where certification is mandatory</td></tr>
+  </table></div>
+
+  <div class="card">
+    <h3>Build-to-Print → Build-to-Spec: moving up the chain</h3>
+    <p>The strategic shift is from assembling to a customer's drawings (Build-to-Print) to owning the design through to production (Build-to-Spec). The FY26 report is explicit about shifting from build-to-print to build-to-spec, and moving up the value chain from manufacturing to design-led solutions.</p>
+    <p>The positioning: the company enters earlier, participates in design iterations, embeds manufacturability into the engineering process, and takes accountability for how the product performs in the field.</p>
+  </div>
+
+  <div class="card">
+    <h3>The mix confirms the trajectory</h3>
+    <p>Circuit board assembly (PCBA) remains the largest segment at roughly half of revenue, with Box Build contributing around a third and gaining share as customers buy integrated systems rather than bare boards. This is the mix that carries higher margins and lower commoditisation risk.</p>
+    <div class="src">Source: segment reporting</div>
+  </div>
+</section>
+
+<!-- MOAT -->
+<section class="panel" id="p2">
+  <h2 class="sect-title">The moat: certification &amp; switching costs</h2>
+  <p class="sect-desc">Entry barriers are certification-based; switching costs are measured in decades, not quarters.</p>
+
+  <div class="card">
+    <h3>Entry barriers — NADCAP is the entry ticket</h3>
+    <ul>
+      <li>Among the first AS9100C aerospace-certified electronics manufacturing facilities, and <b>first in India</b> to obtain NADCAP certification for circuit card assembly.</li>
+      <li>NADCAP AC7120 is described as the gold standard in aerospace and defence manufacturing quality; harness assembly (AC7121) is accredited too.</li>
+      <li>These are <b>independently audited</b> accreditations — customers rely on recurring third-party audits to qualify a supplier.</li>
+      <li>The framework spans organisational, environment-health-safety, medical (ISO 13485) and aerospace (AS9100-D) layers, maintained across India and the US.</li>
+    </ul>
+  </div>
+
+  <blockquote>This is where operational discipline becomes a moat, technical depth becomes a competitive advantage, and three decades of experience become irreplaceable. — management</blockquote>
+
+  <div class="card">
+    <h3>Switching costs — multi-decade contracts</h3>
+    <ul>
+      <li><b>Honeywell, 16 years:</b> an agreement to develop liquid cooling loops for the Micro Vapour Cycle System, an advanced aerospace thermal management solution. A 16-year safety-critical contract is lock-in by design.</li>
+      <li><b>Boeing, first power electronics award:</b> a production contract for Battery Diode Modules for the 787 Dreamliner — the first power electronics and certification support project from Boeing. Being written into a specific aircraft programme's certified supply chain makes replacement slow and risky.</li>
+      <li><b>Lifecycle stickiness:</b> long-term relationships characterised by substantial customer loyalty throughout the product life cycle.</li>
+      <li><b>Parentage:</b> spun out of Cyient Ltd., whose clients include 40% of the world's top 100 innovators.</li>
+    </ul>
+  </div>
+
+  <div class="callout blue"><b>On pricing power:</b> the margin lever is mix, not price. Management frames margin gains through a rising contribution from design-led programmes carrying higher margins and lower commoditisation risk, and by pointing the same stack at higher-value sectors. There is no claim of raising prices on existing programmes.</div>
+</section>
+
+<!-- CAPACITY -->
+<section class="panel" id="p3">
+  <h2 class="sect-title">Scale: the 3rd-shift runway</h2>
+  <p class="sect-desc">The scalability answer is unusual — Cyient DLM does not need new factories to double revenue.</p>
+
+  <blockquote>I think our current capacity utilization is quite low. On a full-year basis, we will be close to 55%, 60% of capacity utilization. And this is running at 2 shifts, right? So, if we actually run 3 shifts, we can potentially double the current revenue without having to add any new factory or new SMT line... There will be some maintenance CAPEX, but those will not be substantial. — CEO Rajendra Velagapudi, Q1 FY26 call</blockquote>
+
+  <div class="callout red"><b>A year later, utilisation has barely moved.</b> June 2026 materials still cite capacity headroom with utilisation at 50–60%. The operating-leverage story is intact but unproven.</div>
+
+  <div class="card">
+    <h3>The second lever: fixed overhead</h3>
+    <p>Indirect cost is already billed for a run rate of $400–500 million and will not grow in line with revenue — so incremental sales drop through at a much higher rate.</p>
+  </div>
+
+  <div class="card">
+    <h3>Dual-shore footprint</h3>
+    <ul>
+      <li>US scale came via the <b>Altek acquisition</b> (Connecticut, ₹134.88 cr of assets added), giving a nearshore US location and access to ITAR work for US Defense.</li>
+      <li>Four Indian facilities (Karnataka, Telangana) plus Connecticut.</li>
+      <li>Additional Mysore land acquired to scale as customer demand accelerates; a Bengaluru precision machining unit has been commissioned.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- FINANCIALS -->
+<section class="panel" id="p4">
+  <h2 class="sect-title">Financial health &amp; the cash flag</h2>
+  <p class="sect-desc">Capital efficiency is the weak leg of the stool. Cash conversion is the central red flag.</p>
+
+  <div class="chartbox">
+    <h3>Returns are stagnant</h3>
+    <div class="cap">Return on capital, return on equity and net margin, in %</div>
+    <div class="wrap"><canvas id="cRet"></canvas></div>
+    <div class="src">Source: reported financials</div>
+  </div>
+
+  <div class="tw"><table>
+    <tr><th>Metric</th><th>FY23</th><th>FY24</th><th>FY25</th><th>FY26</th><th>Read</th></tr>
+    <tr><td>Return on capital</td><td class="n">13.5%</td><td class="n">10.6%</td><td class="n">10.3%</td><td class="n">10.2%</td><td>Stagnant ~10%, no uptrend</td></tr>
+    <tr><td>Return on equity</td><td class="n">16.0%</td><td class="n">6.7%</td><td class="n">7.2%</td><td class="n">7.2%</td><td>Post-IPO equity base, flat</td></tr>
+    <tr><td>Net margin</td><td class="n">3.8%</td><td class="n">5.1%</td><td class="n">4.5%</td><td class="n">5.8%</td><td>Low single digit</td></tr>
+    <tr><td>Net debt / equity</td><td class="n">1.80</td><td class="n">(0.21)</td><td class="n">0.32</td><td class="n pos">0.17</td><td>Healthy, low leverage</td></tr>
+    <tr><td>Capex (₹ cr)</td><td class="n">8</td><td class="n">34</td><td class="n">50</td><td class="n">45</td><td>~3% of revenue, modest</td></tr>
+    <tr><td>Cash flow / profit</td><td class="n pos">170%</td><td class="n neg">-115%</td><td class="n neg">-92%</td><td class="n">74%</td><td>Cash lag persists</td></tr>
+    <tr><td>Working capital (₹ cr)</td><td class="n">302</td><td class="n">381</td><td class="n">669</td><td class="n">681</td><td>Rose sharply FY25, flat FY26</td></tr>
+  </table></div>
+  <div class="src">Source: reported financials</div>
+
+  <div class="chartbox">
+    <h3>Money locked in the business</h3>
+    <div class="cap">Working capital, ₹ crore — the cash tied up in inventory and unpaid customer bills</div>
+    <div class="wrap"><canvas id="cNwc"></canvas></div>
+    <div class="src">Source: reported financials</div>
+  </div>
+
+  <div class="callout red"><b>The forensic concern — profits that don't convert to cash.</b> Over FY23–FY26, cumulative operating cash flow is roughly <b>-₹25 cr</b> against cumulative profit of about <b>₹234 cr</b>. Operating cash flow was -₹71 cr (FY24) and -₹62 cr (FY25), turning barely positive at ₹54 cr only in FY26.</div>
+
+  <div class="card">
+    <h3>The specific red flag</h3>
+    <p>FY26 revenue <b>fell 17%</b> (₹1,520 cr → ₹1,261 cr) while reported profit <b>rose</b> (₹68 cr → ₹73 cr) and working capital stayed pinned at ₹681 cr. Revenue shrinking while money stays locked in unpaid bills and stock — including Altek-related inventory and receivables builds — means reported earnings for the last two years have partly run ahead of actual cash collection.</p>
+    <p>This mirrors management's own FY24 admission that working capital days rose because of reduced customer advances from a revenue mix change, and tightened supplier credit terms.</p>
+  </div>
+
+  <div class="callout green"><b>Debt is not the problem.</b> Net debt is just ₹46 cr against ₹1,012 cr of equity (0.17x). The constraint is working capital, not leverage. The north-star claim is that a third shift doubles revenue without significant further capex — which would lift asset turns sharply if executed.</div>
+</section>
+
+<!-- GROWTH -->
+<section class="panel" id="p5">
+  <h2 class="sect-title">Growth runway</h2>
+  <p class="sect-desc">Record order book, with the pipeline widening beyond aerospace into robotics, AI data centres and semiconductors.</p>
+
+  <div class="card">
+    <h3>Order book momentum</h3>
+    <ul>
+      <li>Q1 FY27 delivered the <b>highest-ever order book since IPO</b>, with a 1.5x book-to-bill ratio (new orders won versus revenue billed).</li>
+      <li>FY26 closed at <b>$262 mn</b>, a net addition of $55 mn.</li>
+      <li>FY26 order intake was over <b>$208 million</b>, also at 1.5x book-to-bill.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>The design-led inflection</h3>
+    <p>First revenue from Build-to-Spec programmes arrived in Q3 FY26 — called an important milestone with a clear runway for significant scale-up. The FY26 report confirms B2S commenced revenue contribution and is positioned for meaningful scale-up.</p>
+  </div>
+
+  <div class="card">
+    <h3>New lanes (Q1 FY27)</h3>
+    <ul>
+      <li><b>Lane one — robotics:</b> needs high-reliability subsystems, control electronics and test assemblies.</li>
+      <li><b>Lane two — AI infrastructure and data centres.</b> The FY26 report frames AI as expanding the electronics content per system, a direct tailwind for high-complexity board and box-build demand.</li>
+      <li><b>Semiconductors:</b> series production initiated for a semiconductor mission supply partner — full-scale, repeatable production.</li>
+      <li><b>Four anchor customers</b> engaged on next-generation product development across aerospace, defence and industrial, with revenues expected from FY28.</li>
+    </ul>
+  </div>
+
+  <div class="callout"><b>The committed margin path:</b> a 9–11% base stack today across four sectors, stepping to 11–13% by FY27–FY29 as robotics and AI data centres are added. The mechanism is end-market mix, not price.</div>
+</section>
+
+<!-- EXECUTION -->
+<section class="panel" id="p6">
+  <h2 class="sect-title">Management: delivered vs. missed</h2>
+  <p class="sect-desc">The narrative has been consistent; guidance has slipped on cash and revenue.</p>
+
+  <div class="tw"><table>
+    <tr><th>Status</th><th>Item</th></tr>
+    <tr><td><span class="pill p-hi">Delivered</span></td><td>EBITDA margin improved from 9.0% (FY25) to 10.1–10.5% (FY26/Q1 FY27)</td></tr>
+    <tr><td><span class="pill p-hi">Delivered</span></td><td>Order book grew to record levels with 1.5x book-to-bill</td></tr>
+    <tr><td><span class="pill p-hi">Delivered</span></td><td>Altek integration executed; ITAR-certified US capacity secured — management: "This acquisition is not diluted in any way in terms of top and bottom line"</td></tr>
+    <tr><td><span class="pill p-lo">Missed</span></td><td>The stated 30% organic growth target (Oct 2024) was not met: FY26 revenue fell 17%, trailing-twelve-month growth is +7.6%</td></tr>
+    <tr><td><span class="pill p-lo">Missed</span></td><td>Working capital reduction has not materialised — it rose to ₹669 cr (FY25) and stayed at ₹681 cr (FY26)</td></tr>
+    <tr><td><span class="pill p-lo">Pending</span></td><td>Utilisation stayed in the 50–60% band for a year — the 3rd-shift leverage has been talked about, not produced</td></tr>
+    <tr><td><span class="pill p-md">Flagged</span></td><td>Management itself noted defence order-book lumpiness: when a contract concludes, the next one does not follow immediately — there is a time gap</td></tr>
+  </table></div>
+
+  <div class="card">
+    <h3>A new hire pointed at the new lanes</h3>
+    <p>A dedicated US-based President &amp; Chief Strategy and Growth Officer was appointed in May 2026, briefed to scale advanced manufacturing capabilities across data centres, AI and next-generation computing.</p>
+  </div>
+</section>
+
+<!-- VALUATION -->
+<section class="panel" id="p7">
+  <h2 class="sect-title">Valuation</h2>
+  <p class="sect-desc">The market is pricing in the 3rd-shift double and the design-led margin step-up as if already delivered.</p>
+
+  <div class="tw"><table>
+    <tr><th>Multiple</th><th>Current</th><th>3-Yr Median</th><th>5-Yr Median</th><th>Industry</th></tr>
+    <tr><td>Price to earnings</td><td class="n neg">67.3x</td><td class="n">57.1x</td><td class="n">57.1x</td><td class="n">79.7x</td></tr>
+    <tr><td>EV / EBITDA</td><td class="n neg">39.6x</td><td class="n">25.0x</td><td class="n">25.0x</td><td class="n">40.6x</td></tr>
+    <tr><td>Price to book</td><td class="n neg">5.5x</td><td class="n">3.4x</td><td class="n">3.4x</td><td class="n">5.7x</td></tr>
+  </table></div>
+
+  <div class="card">
+    <h3>The rest of the picture</h3>
+    <ul>
+      <li><b>PEG 6.53</b> — the price-to-earnings multiple set against the growth rate; well above the 1x that would suggest growth justifies the price.</li>
+      <li><b>Free cash flow yield 0.2%</b> — almost no spare cash relative to market value.</li>
+      <li><b>Market cap ₹5,530 cr</b>; 1-year return <span class="pos">+66.1%</span>.</li>
+    </ul>
+    <div class="src">Source: valuation metrics, market data</div>
+  </div>
+
+  <div class="callout"><b>The verdict on "harder to replace": yes, on capability.</b> Certifications, multi-decade contracts and the design-led shift genuinely raise switching costs and entry barriers. But "better, faster, at global scale" is unproven — return on capital has not moved in three years, cumulative operating cash flow is negative against cumulative profit, and at 67x earnings with a 0.2% cash yield the price allows no room for the 3rd-shift ramp or the margin lift to slip.</div>
+</section>
+
+</main>
+
+<script>
+var TABS = ["Verdict","Value Chain","Moat","Capacity","Financials","Growth","Execution","Valuation"];
+var drawn = {};
+var navEl = document.getElementById('tabs');
+TABS.forEach(function(t,i){
+  var b = document.createElement('button');
+  b.className = 'tab' + (i===0?' active':'');
+  b.textContent = t;
+  b.onclick = function(){ go(i, b); };
+  navEl.appendChild(b);
+});
+function go(i, btn){
+  document.querySelectorAll('.tab').forEach(function(e){e.classList.remove('active')});
+  document.querySelectorAll('.panel').forEach(function(e){e.classList.remove('active')});
+  btn.classList.add('active');
+  document.getElementById('p'+i).classList.add('active');
+  btn.scrollIntoView({inline:'center', block:'nearest', behavior:'smooth'});
+  window.scrollTo({top:0, behavior:'smooth'});
+  render(i);
+}
+var AX = { grid:{color:'rgba(23,35,59,.8)'}, ticks:{color:'#8a94a6', font:{family:'JetBrains Mono', size:10}} };
+function opts(){
+  return {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ labels:{ color:'#8a94a6', font:{family:'DM Sans', size:11}, boxWidth:12 } } },
+    scales:{ x:AX, y:AX }
+  };
+}
+function render(i){
+  if(drawn[i]) return;
+  drawn[i] = true;
+  if(i===4){
+    new Chart(document.getElementById('cRet'), {
+      type:'line',
+      data:{
+        labels:['FY23','FY24','FY25','FY26'],
+        datasets:[
+          { label:'Return on capital', data:[13.5,10.6,10.3,10.2], borderColor:'#f0a500', tension:.3, pointRadius:4 },
+          { label:'Return on equity', data:[16.0,6.7,7.2,7.2], borderColor:'#5aa9ff', tension:.3, pointRadius:4 },
+          { label:'Net margin', data:[3.8,5.1,4.5,5.8], borderColor:'#37d39b', tension:.3, pointRadius:4 }
+        ]
+      },
+      options: opts()
+    });
+    new Chart(document.getElementById('cNwc'), {
+      type:'bar',
+      data:{
+        labels:['FY23','FY24','FY25','FY26'],
+        datasets:[{ label:'Working capital (₹ cr)', data:[302,381,669,681],
+          backgroundColor:['rgba(240,165,0,.6)','rgba(240,165,0,.7)','rgba(255,89,100,.75)','rgba(255,89,100,.75)'], borderRadius:5 }]
+      },
+      options: opts()
+    });
+  }
+}
+</script>
+</body>
+</html>
